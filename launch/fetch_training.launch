@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <rosparam command="load" file="$(find robot_training)/config/fetch_training_parm.yaml" />
+    <!-- Launch the training system -->
+    <node pkg="robot_training" name="fetch_n1try_algorithm" type="fetch_training.py" output="screen"/>
+</launch>
