@@ -12,13 +12,25 @@ import subprocess
 
 
 def EnvRegister(task_env, max_episode_steps=10000):
-    register(
-        id=task_env,
-        entry_point='task_envs.fetch.fetch_test_task:FetchTestEnv',
-        max_episode_steps=max_episode_steps,
-    )
-    from task_envs.fetch import fetch_test_task
-
+    if task_env == 'FetchTest-v0':
+        rospy.logwarn("register FetchTest-v0")
+        register(
+            id=task_env,
+            entry_point='task_envs.fetch.fetch_test_task:FetchTestEnv',
+            max_episode_steps=max_episode_steps,
+        )
+        from task_envs.fetch import fetch_test_task
+    elif task_env == 'IriWamTcpToBowl-v0':
+        rospy.logwarn("register IriWamTcpToBowl-v0")
+        register(
+            id=task_env,
+            entry_point='task_envs.iriwam.iriwam_test_task:IriWamTcpToBowlEnv',
+            max_episode_steps=max_episode_steps,
+        )
+        from task_envs.iriwam import iriwam_test_task
+    else:
+        rospy.logwarn("register None")
+        return None
     # We check that it was really registered
     all_envs = envs.registry.all()
     env_ids = [env_spec.id for env_spec in all_envs]

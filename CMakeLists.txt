@@ -10,6 +10,9 @@ project(robot_training)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
+  actionlib
+  actionlib_msgs
+  trajectory_msgs
   message_generation
 )
 
@@ -61,9 +64,9 @@ add_message_files(
 
 ## Generate actions in the 'action' folder
 # add_action_files(
+#   DIRECTORY action
 #   FILES
-#   Action1.action
-#   Action2.action
+#   FollowJointTrajectory.action
 # )
 
 ## Generate added messages and services with any dependencies listed here
