@@ -35,7 +35,7 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
 
         self.get_params()
         rospy.logwarn("finish loading FetchTestEnv Env")
-        
+
         self.action_space = spaces.Discrete(self.n_actions)
 
         observations_high_range = np.array(
@@ -92,11 +92,9 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
         rospy.logwarn("Init Pos:")
         rospy.logwarn(self.init_pos)
 
-        
         # Init Joint Pose
         rospy.logwarn("Moving To SETUP Joints ")
         self.movement_result = self.set_trajectory_joints(self.init_pos)
-        
 
         # We test the Desired Goal
 
@@ -118,7 +116,7 @@ class FetchTestEnv(fetch_env.FetchEnv, utils.EzPickle):
             self.current_dist_from_des_pos_ee = self.calculate_distance_between(
                 self.desired_position, self.last_gripper_target)
             rospy.logwarn("INIT DISTANCE FROM GOAL==>" +
-                           str(self.current_dist_from_des_pos_ee))
+                          str(self.current_dist_from_des_pos_ee))
         else:
             assert False, "Desired GOAL EE is not possible"
 

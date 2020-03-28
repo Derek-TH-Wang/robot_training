@@ -26,4 +26,11 @@ catkin_make
 source devel/setup.bash  
 roslaunch robot_training iriwam_training.launch  
 ```
-
+### ginger robot demo:  
+```
+git clone https://github.com/Derek-TH-Wang/gingerurdf.git  
+git checkout simulator  
+catkin_make  
+source devel/setup.bash  
+roslaunch robot_training ginger_training_pathplanning.launch  
+```

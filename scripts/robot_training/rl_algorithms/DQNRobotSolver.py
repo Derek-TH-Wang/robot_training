@@ -20,8 +20,14 @@ class DQNRobotSolver():
         self._env = env
         if monitor:
             rospy.logwarn("monitor")
-            self._env = gym.wrappers.Monitor(
-                self._env, '../data/fetch-1', force=True)
+            rospackage_name = "robot_training"
+            rospack = rospkg.RosPack()
+            pkg_path = rospack.get_path(rospackage_name)
+            outdir = pkg_path + '/learning_result/data/' + environment_name
+            if not os.path.exists(outdir):
+                os.makedirs(outdir)
+                rospy.logfatal("Created folder="+str(outdir))
+            self._env = gym.wrappers.Monitor(self._env, outdir, force=True)
 
         self.input_dim = n_observations
         self.n_actions = n_actions
@@ -56,17 +62,16 @@ class DQNRobotSolver():
             # We return a random sample form the available action space
             rospy.logfatal(">>>>>Chosen Random ACTION")
             action_chosen = self._env.action_space.sample()
-
         else:
             # We return the best known prediction based on the state
             action_chosen = np.argmax(self.model.predict(state))
 
         if do_train:
             rospy.logwarn("LEARNING A="+str(action_chosen) +
-                           ",E="+str(round(epsilon, 3))+",I="+str(iteration))
+                          ",E="+str(round(epsilon, 3))+",I="+str(iteration))
         else:
             rospy.logwarn("RUNNING A="+str(action_chosen) +
-                           ",E="+str(round(epsilon, 3))+",I="+str(iteration))
+                          ",E="+str(round(epsilon, 3))+",I="+str(iteration))
 
         return action_chosen
 
@@ -97,11 +102,11 @@ class DQNRobotSolver():
 
     def run(self, num_episodes, do_train=False):
 
-        rate = rospy.Rate(30)
-
         scores = deque(maxlen=100)
 
-        for e in range(num_episodes):
+        # for e in range(num_episodes):
+        e = 0
+        while not rospy.is_shutdown():
 
             init_state = self._env.reset()
 
@@ -115,11 +120,9 @@ class DQNRobotSolver():
                     state, self.get_epsilon(e), do_train, i)
                 next_state, reward, done, _ = self._env.step(action)
                 next_state = self.preprocess_state(next_state)
-
                 if do_train:
                     # If we are training we want to remember what I did and process it.
                     self.remember(state, action, reward, next_state, done)
-
                 state = next_state
                 i += 1
 
@@ -127,18 +130,19 @@ class DQNRobotSolver():
             mean_score = np.mean(scores)
             if mean_score >= self.n_win_ticks and e >= self.min_episodes:
                 if not self.quiet:
-                    print('Ran {} episodes. Solved after {} trials'.format(
+                    rospy.logfatal('Ran {} episodes. Solved after {} trials'.format(
                         e, e - self.min_episodes))
                 return e - self.min_episodes
             if e % 1 == 0 and not self.quiet:
-                print('[Episode {}] - Mean survival time over last {} episodes was {} ticks.'.format(
+                rospy.logfatal('[Episode {}] - Mean survival time over last {} episodes was {} ticks.'.format(
                     e, self.min_episodes, mean_score))
 
             if do_train:
                 self.replay(self.batch_size)
+            e = e+1
 
         if not self.quiet:
-            print('Did not solve after {} episodes'.format(e))
+            rospy.logfatal('Did not solve after {} episodes'.format(e))
         return e
 
     def save(self, model_name, models_dir_path="/tmp"):
@@ -161,7 +165,7 @@ class DQNRobotSolver():
             yaml_file.write(model_yaml)
         # serialize weights to HDF5: http://www.h5py.org/
         self.model.save_weights(model_name_HDF5_format_path)
-        print("Saved model to disk")
+        rospy.logfatal("Saved model to disk")
 
     def load(self, model_name, models_dir_path="/tmp"):
         """
@@ -183,4 +187,4 @@ class DQNRobotSolver():
         self.model = model_from_yaml(loaded_model_yaml)
         # load weights into new model
         self.model.load_weights(model_name_HDF5_format_path)
-        print("Loaded model from disk")
+        rospy.logfatal("Loaded model from disk")

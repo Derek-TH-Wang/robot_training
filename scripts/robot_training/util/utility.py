@@ -28,13 +28,20 @@ def EnvRegister(task_env, max_episode_steps=10000):
             max_episode_steps=max_episode_steps,
         )
         from task_envs.iriwam import iriwam_test_task
+    elif task_env == 'GingerPathPlanning-v0':
+        rospy.logwarn("GingerPathPlanning-v0")
+        register(
+            id=task_env,
+            entry_point='task_envs.ginger.ginger_pathplanning_task:GingerTaskEnv',
+            max_episode_steps=max_episode_steps,
+        )
+        from task_envs.ginger import ginger_pathplanning_task
     else:
         rospy.logwarn("register None")
         return None
     # We check that it was really registered
     all_envs = envs.registry.all()
     env_ids = [env_spec.id for env_spec in all_envs]
-    # print("REGISTERED GYM ENVS===>"+str(env_ids))
     assert (task_env in env_ids), "The Task_Robot_ENV given is not Registered ==>" +  str(task_env)
     
     rospy.logwarn("Register of Task Env went OK, lets make the env..."+str(task_env))

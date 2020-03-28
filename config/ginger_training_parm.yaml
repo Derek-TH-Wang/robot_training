@@ -1,0 +1,51 @@
+ginger: #namespace
+  task_and_robot_environment_name: "GingerPathPlanning-v0"
+
+  #qlearn parameters
+  alpha: 0.01 # Learning Rate
+  alpha_decay: 0.01
+  gamma: 1.0 # future rewards value 0 none 1 a lot
+  epsilon: 1.0 # exploration, 0 none 1 a lot
+  epsilon_decay: 0.995 # how we reduse the exploration
+  epsilon_min: 0.01 # minimum value that epsilon can have
+  batch_size: 64 # maximum size of the batches sampled from memory
+  episodes_training: 500
+  episodes_running: 100
+  n_win_ticks: 50 # If the mean of rewards is bigger than this and have passed min_episodes, the task is considered finished
+  min_episodes: 10
+  monitor: True
+  quiet: False
+
+  # Ginger Realated parameters
+  n_actions: 2180 # 3^7
+  n_observations: 8 # 7 angles + joint space distance
+  n_dof: 7
+  action_step: 0.1
+  # action_upper_limit
+  # action_lower_limit
+
+  step_punishment: -1
+  closer_reward: 10
+  impossible_movement_punishement: -100
+  reached_goal_reward: 100000
+
+  init_angle:
+    joint0: 0.0
+    joint1: 0.0
+    joint2: 0.0
+    joint3: 0.0
+    joint4: 0.0
+    joint5: 0.0
+    joint6: 0.0
+
+  goal_angle:
+    joint0: -0.7
+    joint1:  0.4
+    joint2:  0.8
+    joint3: -1.3
+    joint4: -0.8
+    joint5:  0.2
+    joint6:  0.0
+
+  max_distance: 1.0 # Maximum distance from EE to the desired GOAL EE
+

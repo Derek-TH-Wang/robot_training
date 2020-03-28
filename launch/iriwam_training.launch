@@ -4,5 +4,5 @@
     <!-- This version uses the openai_ros environments -->
     <rosparam command="load" file="$(find robot_training)/config/iriwam_training_parm.yaml" />
     <!-- Launch the training system -->
-    <node pkg="robot_training" name="iriwam_tcp_to_bowl_qlearn" type="iriwam_training.py" output="screen"/>
+    <node pkg="robot_training" name="iriwam_tcp_to_bowl_qlearn" type="training_iriwam.py" output="screen"/>
 </launch>

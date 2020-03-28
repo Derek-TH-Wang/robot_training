@@ -1,5 +1,5 @@
 iriwam: #namespace
-    task_and_robot_environment_name: 'IriWamTcpToBowl-v0'
+    task_and_robot_environment_name: "IriWamTcpToBowl-v0"
     ros_ws_abspath: "/home/derek/openai_ws"
     #qlearn parameters
     alpha: 0.1
