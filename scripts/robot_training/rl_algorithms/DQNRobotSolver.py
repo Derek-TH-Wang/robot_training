@@ -19,14 +19,14 @@ class DQNRobotSolver():
         self.memory = deque(maxlen=100000)
         self._env = env
         if monitor:
-            rospy.logwarn("monitor")
+            rospy.loginfo("monitor")
             rospackage_name = "robot_training"
             rospack = rospkg.RosPack()
             pkg_path = rospack.get_path(rospackage_name)
             outdir = pkg_path + '/learning_result/data/' + environment_name
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
-                rospy.logfatal("Created folder="+str(outdir))
+                rospy.loginfo("Created folder="+str(outdir))
             self._env = gym.wrappers.Monitor(self._env, outdir, force=True)
 
         self.input_dim = n_observations
@@ -60,17 +60,17 @@ class DQNRobotSolver():
 
         if do_train and (np.random.random() <= epsilon):
             # We return a random sample form the available action space
-            rospy.logfatal(">>>>>Chosen Random ACTION")
+            rospy.logwarn(">>>>>Chosen Random ACTION")
             action_chosen = self._env.action_space.sample()
         else:
             # We return the best known prediction based on the state
             action_chosen = np.argmax(self.model.predict(state))
 
         if do_train:
-            rospy.logwarn("LEARNING A="+str(action_chosen) +
+            rospy.loginfo("LEARNING A="+str(action_chosen) +
                           ",E="+str(round(epsilon, 3))+",I="+str(iteration))
         else:
-            rospy.logwarn("RUNNING A="+str(action_chosen) +
+            rospy.loginfo("RUNNING A="+str(action_chosen) +
                           ",E="+str(round(epsilon, 3))+",I="+str(iteration))
 
         return action_chosen
@@ -130,7 +130,7 @@ class DQNRobotSolver():
             mean_score = np.mean(scores)
             if mean_score >= self.n_win_ticks and e >= self.min_episodes:
                 if not self.quiet:
-                    rospy.logfatal('Ran {} episodes. Solved after {} trials'.format(
+                    rospy.logwarn('Ran {} episodes. Solved after {} trials'.format(
                         e, e - self.min_episodes))
                 return e - self.min_episodes
             if e % 1 == 0 and not self.quiet:
@@ -165,7 +165,7 @@ class DQNRobotSolver():
             yaml_file.write(model_yaml)
         # serialize weights to HDF5: http://www.h5py.org/
         self.model.save_weights(model_name_HDF5_format_path)
-        rospy.logfatal("Saved model to disk")
+        rospy.logwarn("Saved model to disk")
 
     def load(self, model_name, models_dir_path="/tmp"):
         """
@@ -187,4 +187,4 @@ class DQNRobotSolver():
         self.model = model_from_yaml(loaded_model_yaml)
         # load weights into new model
         self.model.load_weights(model_name_HDF5_format_path)
-        rospy.logfatal("Loaded model from disk")
+        rospy.logwarn("Loaded model from disk")

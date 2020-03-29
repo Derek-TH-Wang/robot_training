@@ -13,13 +13,13 @@ from robot_training.util.utility import *
 
 class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
     def __init__(self):
-        rospy.logwarn("go into GingerTaskEnv")
+        rospy.loginfo("go into GingerTaskEnv")
         self.get_params()
         self.action_space = spaces.Discrete(self.n_actions)
         self.observation_space = spaces.Box(-np.inf, np.inf,
                                             shape=(self.n_observations, ), dtype='float64')
         super(GingerTaskEnv, self).__init__()
-        rospy.logwarn("========= Out FetchTestEnv")
+        rospy.loginfo("========= Out FetchTestEnv")
 
     def get_params(self):
         # get configuration parameters
@@ -48,27 +48,25 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
                               self.goal_angle["joint4"], self.goal_angle["joint5"], self.goal_angle["joint6"]]
 
     def _set_init_joint(self):
-        rospy.logwarn("Init Joint:")
-        rospy.logwarn(self.init_angle)
+        rospy.logdebug("Init Joint:")
+        rospy.logdebug(self.init_angle)
 
         # Init Joint Pose
         init_angle = [self.init_angle["joint0"],
                       self.init_angle["joint1"], self.init_angle["joint2"], self.init_angle["joint3"],
                       self.init_angle["joint4"], self.init_angle["joint5"], self.init_angle["joint6"]]
-        rospy.logwarn("Moving To SETUP Joints ")
         self.movement_result = self.set_left_arm_position(init_angle)
         if self.movement_result:
             # INIT POSE
-            rospy.logwarn("Moving To SETUP Position ")
+            rospy.logwarn("Moved To Init Position ")
             self.last_joint_angle = init_angle
             self.current_dist_from_des = self.calculate_distance_between(
                 self.desired_angle, self.last_joint_angle)
-            rospy.logwarn("INIT DISTANCE FROM GOAL==>" +
+            rospy.loginfo("INIT DISTANCE FROM GOAL==>" +
                           str(self.current_dist_from_des))
         else:
+            rospy.logfatal("Moved To Init Position ERR")
             assert False, "Desired GOAL EE is not possible"
-
-        rospy.logwarn("Init Pose Results ==>"+str(self.movement_result))
 
         return self.movement_result
 
@@ -110,7 +108,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         if self.movement_result:
             self.last_joint_angle = copy.deepcopy(current_joint_angle)
         else:
-            rospy.logerr("Impossible joint Position...." +
+            rospy.logfatal("Impossible joint Position...." +
                          str(current_joint_angle))
 
     def _get_obs(self):
@@ -163,7 +161,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
                 rospy.logfatal("Reached a Desired Position!")
         else:
             done = True
-            rospy.logfatal("Reached a joint position not reachable")
+            rospy.logfatal("action is done")
 
         return done
 
@@ -179,28 +177,24 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
             # Calculating Distance
             rospy.logdebug("desired_angle="+str(desired_angle))
             rospy.logdebug("current_pos="+str(current_pos))
-            rospy.logwarn("self.current_dist_from_des=" +
+            rospy.loginfo("self.current_dist_from_des=" +
                           str(self.current_dist_from_des))
-            rospy.logwarn("new_dist_from_des=" + str(new_dist_from_des))
+            rospy.loginfo("new_dist_from_des=" + str(new_dist_from_des))
 
             delta_dist = new_dist_from_des - self.current_dist_from_des
             if position_similar:
                 reward = self.reached_goal_reward
-                rospy.logwarn("Reached a Desired Position!")
+                rospy.loginfo("Reached a Desired Position!")
             else:
                 reward = self.step_punishment
                 rospy.logwarn(
                     "FURTHER FROM Desired Position!"+str(delta_dist))
-
         else:
             reward = self.impossible_movement_punishement
-            rospy.logwarn("Reached a joint position not reachable")
-
         # We update the distance
         self.current_dist_from_des = new_dist_from_des
         rospy.logdebug("Updated Distance from GOAL==" +
                        str(self.current_dist_from_des))
-
         return reward
 
     def calculate_distance_between(self, v1, v2):

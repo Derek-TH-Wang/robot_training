@@ -17,7 +17,7 @@ from robot_training.robot_sim.rviz_envs import robot_rviz_env
 class GingerEnv(robot_rviz_env.RobotRvizEnv):
 
     def __init__(self):
-        rospy.logwarn("go into GingerEnv")
+        rospy.loginfo("go into GingerEnv")
 
         self.controllers_list = []
 
@@ -103,7 +103,7 @@ class GingerEnv(robot_rviz_env.RobotRvizEnv):
         rospy.Subscriber("/RightHand/Position",
                          HandMsgs, self.sub_right_hand_joint_callback)
 
-        rospy.logwarn("========= Out GingerRobotEnv")
+        rospy.loginfo("========= Out GingerRobotEnv")
 
     def _check_all_systems_ready(self):
         """

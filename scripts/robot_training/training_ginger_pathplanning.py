@@ -16,9 +16,9 @@ if __name__ == '__main__':
     rospy.init_node('ginger_training_pathplanning',
                     anonymous=True, log_level=rospy.INFO)
 
-    rospy.logwarn("read parm from yaml")
+    rospy.loginfo("read parm from yaml")
     task_env_name = rospy.get_param('/ginger/task_and_robot_environment_name')
-    rospy.logwarn("task_and_robot_environment_name ==>" + str(task_env_name))
+    rospy.loginfo("task_and_robot_environment_name ==>" + str(task_env_name))
     alpha = rospy.get_param('/ginger/alpha')
     alpha_decay = rospy.get_param('/ginger/alpha_decay')
     gamma = rospy.get_param('/ginger/gamma')
@@ -48,10 +48,10 @@ if __name__ == '__main__':
     add_thread.start()
     rospy.sleep(1)
 
-    rospy.logwarn("env_register")
+    rospy.loginfo("env_register")
     env_object = EnvRegister(task_env_name)
 
-    rospy.logwarn("Starting Learning")
+    rospy.loginfo("Starting Learning")
     agent = DQNRobotSolver(env_object,
                            task_env_name,
                            n_observations,
@@ -70,13 +70,13 @@ if __name__ == '__main__':
                            quiet)
     agent.run(num_episodes=n_episodes_training, do_train=True)
 
-    rospy.logwarn("training over")
+    rospy.logfatal("training over")
     rospack = rospkg.RosPack()
     pkg_path = rospack.get_path(rospackage_name)
     outdir = pkg_path + '/learning_result/models'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
-        rospy.logfatal("Created folder="+str(outdir))
+        rospy.loginfo("Created folder="+str(outdir))
 
     agent.save(model_name, outdir)
     agent.load(model_name, outdir)

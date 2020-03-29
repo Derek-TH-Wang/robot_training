@@ -13,7 +13,7 @@ import subprocess
 
 def EnvRegister(task_env, max_episode_steps=10000):
     if task_env == 'FetchTest-v0':
-        rospy.logwarn("register FetchTest-v0")
+        rospy.loginfo("register FetchTest-v0")
         register(
             id=task_env,
             entry_point='task_envs.fetch.fetch_test_task:FetchTestEnv',
@@ -21,7 +21,7 @@ def EnvRegister(task_env, max_episode_steps=10000):
         )
         from task_envs.fetch import fetch_test_task
     elif task_env == 'IriWamTcpToBowl-v0':
-        rospy.logwarn("register IriWamTcpToBowl-v0")
+        rospy.loginfo("register IriWamTcpToBowl-v0")
         register(
             id=task_env,
             entry_point='task_envs.iriwam.iriwam_test_task:IriWamTcpToBowlEnv',
@@ -29,7 +29,7 @@ def EnvRegister(task_env, max_episode_steps=10000):
         )
         from task_envs.iriwam import iriwam_test_task
     elif task_env == 'GingerPathPlanning-v0':
-        rospy.logwarn("GingerPathPlanning-v0")
+        rospy.loginfo("GingerPathPlanning-v0")
         register(
             id=task_env,
             entry_point='task_envs.ginger.ginger_pathplanning_task:GingerTaskEnv',
@@ -37,14 +37,14 @@ def EnvRegister(task_env, max_episode_steps=10000):
         )
         from task_envs.ginger import ginger_pathplanning_task
     else:
-        rospy.logwarn("register None")
+        rospy.loginfo("register None")
         return None
     # We check that it was really registered
     all_envs = envs.registry.all()
     env_ids = [env_spec.id for env_spec in all_envs]
     assert (task_env in env_ids), "The Task_Robot_ENV given is not Registered ==>" +  str(task_env)
     
-    rospy.logwarn("Register of Task Env went OK, lets make the env..."+str(task_env))
+    rospy.loginfo("Register of Task Env went OK, lets make the env..."+str(task_env))
     env = gym.make(task_env)
     rospy.logwarn("gym make finish")
     return env
