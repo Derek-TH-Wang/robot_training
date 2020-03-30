@@ -12,6 +12,7 @@ from keras.models import model_from_yaml
 import rospkg
 import rospy
 import os
+import matplotlib.pyplot as plt
 
 
 class DQNRobotSolver():
@@ -46,9 +47,11 @@ class DQNRobotSolver():
 
         # Init model
         self.model = Sequential()
-
-        self.model.add(Dense(24, input_dim=self.input_dim, activation='tanh'))
-        self.model.add(Dense(48, activation='tanh'))
+        # input = input_dim, output = 24?, activation = relu
+        self.model.add(
+            Dense(2000, input_dim=self.input_dim, activation='relu'))
+        # input = 24?, output = 48?, activation = relu
+        self.model.add(Dense(100, activation='relu'))
         self.model.add(Dense(self.n_actions, activation='linear'))
         self.model.compile(loss='mse', optimizer=Adam(
             lr=self.alpha, decay=self.alpha_decay))
@@ -67,10 +70,10 @@ class DQNRobotSolver():
             action_chosen = np.argmax(self.model.predict(state))
 
         if do_train:
-            rospy.loginfo("LEARNING A="+str(action_chosen) +
+            rospy.logwarn("LEARNING A="+str(action_chosen) +
                           ",E="+str(round(epsilon, 3))+",I="+str(iteration))
         else:
-            rospy.loginfo("RUNNING A="+str(action_chosen) +
+            rospy.logwarn("RUNNING A="+str(action_chosen) +
                           ",E="+str(round(epsilon, 3))+",I="+str(iteration))
 
         return action_chosen
@@ -95,10 +98,18 @@ class DQNRobotSolver():
             x_batch.append(state[0])
             y_batch.append(y_target[0])
 
-        self.model.fit(np.array(x_batch), np.array(y_batch),
-                       batch_size=len(x_batch), verbose=0)
+        history = self.model.fit(np.array(x_batch), np.array(y_batch),
+                                 batch_size=len(x_batch), verbose=0)
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
+
+        # plt.plot(history.history['loss'])
+        # plt.title("model loss")
+        # plt.ylabel("loss")
+        # plt.xlabel("epoch")
+        # plt.legend(["train", "test"], loc="upper left")
+        # plt.show()
+        rospy.logwarn("loss = " + str(history.history['loss']))
 
     def run(self, num_episodes, do_train=False):
 

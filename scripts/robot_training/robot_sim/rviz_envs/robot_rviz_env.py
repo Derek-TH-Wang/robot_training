@@ -41,7 +41,7 @@ class RobotRvizEnv(gym.Env):
         reward = self._compute_reward(obs, done)
         self.cumulated_episode_reward += reward
         rospy.sleep(0.01)
-        rospy.logdebug("END STEP Rviz")
+        rospy.loginfo("-----------------------------------------")
 
         return obs, reward, done, info
 

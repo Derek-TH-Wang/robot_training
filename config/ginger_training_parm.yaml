@@ -24,10 +24,10 @@ ginger: #namespace
   # action_upper_limit
   # action_lower_limit
 
-  step_punishment: -1
-  closer_reward: 10
+  step_punishment: -10
+  closer_reward: 1
   impossible_movement_punishement: -100
-  reached_goal_reward: 100000
+  reached_goal_reward: 100000000
 
   init_angle:
     joint0: 0.0

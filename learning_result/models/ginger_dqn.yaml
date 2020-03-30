@@ -4,7 +4,7 @@ config:
   layers:
   - class_name: Dense
     config:
-      activation: tanh
+      activation: relu
       activity_regularizer: null
       batch_input_shape: !!python/tuple [null, 8]
       bias_constraint: null
@@ -20,11 +20,11 @@ config:
       kernel_regularizer: null
       name: dense_1
       trainable: true
-      units: 24
+      units: 2000
       use_bias: true
   - class_name: Dense
     config:
-      activation: tanh
+      activation: relu
       activity_regularizer: null
       bias_constraint: null
       bias_initializer:
@@ -39,7 +39,7 @@ config:
       kernel_regularizer: null
       name: dense_2
       trainable: true
-      units: 48
+      units: 100
       use_bias: true
   - class_name: Dense
     config:

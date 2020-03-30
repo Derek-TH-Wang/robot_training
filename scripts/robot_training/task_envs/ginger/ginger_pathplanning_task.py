@@ -186,9 +186,13 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
                 reward = self.reached_goal_reward
                 rospy.loginfo("Reached a Desired Position!")
             else:
-                reward = self.step_punishment
-                rospy.logwarn(
-                    "FURTHER FROM Desired Position!"+str(delta_dist))
+                # reward = self.step_punishment
+                # rospy.logwarn(
+                #     "FURTHER FROM Desired Position!"+str(delta_dist))
+                if delta_dist < 0:
+                    reward = self.closer_reward
+                else:
+                    reward = self.step_punishment
         else:
             reward = self.impossible_movement_punishement
         # We update the distance
