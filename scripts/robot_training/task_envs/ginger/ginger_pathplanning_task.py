@@ -128,9 +128,9 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         It will also end if it reaches its goal.
         """
         current_joint = observations[:self.n_dof]
-        done = self.calculate_if_done(
+        done, reach_goal = self.calculate_if_done(
             self.movement_result, self.desired_angle, current_joint)
-        return done
+        return done, reach_goal
 
     def _compute_reward(self, observations, done):
         """
@@ -152,18 +152,20 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         It calculated whather it has finished or not
         """
         done = False
+        reach_goal = False
 
         if movement_result:
             position_similar = np.all(np.isclose(
                 desired_angle, current_pos, atol=1e-02))
             if position_similar:
                 done = True
+                reach_goal = True
                 rospy.logfatal("Reached a Desired Position!")
         else:
             done = True
             rospy.logfatal("action is done")
 
-        return done
+        return done, reach_goal
 
     def calculate_reward(self, movement_result, desired_angle, current_pos, new_dist_from_des):
         """

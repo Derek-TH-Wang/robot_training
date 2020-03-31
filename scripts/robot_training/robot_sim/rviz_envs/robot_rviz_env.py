@@ -36,14 +36,13 @@ class RobotRvizEnv(gym.Env):
 
         self._set_action(action)
         obs = self._get_obs()
-        done = self._is_done(obs)
-        info = {}
+        done, reach_goal = self._is_done(obs)
         reward = self._compute_reward(obs, done)
         self.cumulated_episode_reward += reward
-        rospy.sleep(0.01)
+        rospy.sleep(0.005)
         rospy.loginfo("-----------------------------------------")
 
-        return obs, reward, done, info
+        return obs, reward, done, reach_goal
 
     def reset(self):
         rospy.logdebug("Reseting RobotRvizEnvironment")

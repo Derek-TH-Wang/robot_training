@@ -113,7 +113,7 @@ class DQNRobotSolver():
 
     def run(self, num_episodes, do_train=False):
 
-        scores = deque(maxlen=100)
+        # scores = deque(maxlen=100)
 
         # for e in range(num_episodes):
         e = 0
@@ -129,7 +129,7 @@ class DQNRobotSolver():
                 # self._env.render()
                 action = self.choose_action(
                     state, self.get_epsilon(e), do_train, i)
-                next_state, reward, done, _ = self._env.step(action)
+                next_state, reward, done, reach_goal = self._env.step(action)
                 next_state = self.preprocess_state(next_state)
                 if do_train:
                     # If we are training we want to remember what I did and process it.
@@ -137,23 +137,27 @@ class DQNRobotSolver():
                 state = next_state
                 i += 1
 
-            scores.append(i)
-            mean_score = np.mean(scores)
-            if mean_score >= self.n_win_ticks and e >= self.min_episodes:
-                if not self.quiet:
-                    rospy.logwarn('Ran {} episodes. Solved after {} trials'.format(
-                        e, e - self.min_episodes))
-                return e - self.min_episodes
-            if e % 1 == 0 and not self.quiet:
-                rospy.logfatal('[Episode {}] - Mean survival time over last {} episodes was {} ticks.'.format(
-                    e, self.min_episodes, mean_score))
+            # scores.append(i)
+            # mean_score = np.mean(scores)
+            # if mean_score >= self.n_win_ticks and e >= self.min_episodes:
+            #     if not self.quiet:
+            #         rospy.logwarn('Ran {} episodes. Solved after {} trials'.format(
+            #             e, e - self.min_episodes))
+            #     return e - self.min_episodes
+            # if e % 1 == 0 and not self.quiet:
+            #     rospy.logfatal('[Episode {}] - Mean survival time over last {} episodes was {} ticks.'.format(
+            #         e, self.min_episodes, mean_score))
+
+            if reach_goal:
+                rospy.logfatal("reach goal, training finish")
+                return e
 
             if do_train:
                 self.replay(self.batch_size)
             e = e+1
 
-        if not self.quiet:
-            rospy.logfatal('Did not solve after {} episodes'.format(e))
+        # if not self.quiet:
+        #     rospy.logfatal('Did not solve after {} episodes'.format(e))
         return e
 
     def save(self, model_name, models_dir_path="/tmp"):
