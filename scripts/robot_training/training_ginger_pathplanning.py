@@ -34,8 +34,6 @@ if __name__ == '__main__':
     quiet = rospy.get_param('/ginger/quiet')
     n_actions = rospy.get_param('/ginger/n_actions')
     n_observations = rospy.get_param('/ginger/n_observations')
-    # action_upper_limit = rospy.get_param('/ginger/action_upper_limit')
-    # action_lower_limit = rospy.get_param('/ginger/action_lower_limit')
     action_step = rospy.get_param('/ginger/action_step')
 
     max_env_steps = None

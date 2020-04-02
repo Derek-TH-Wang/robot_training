@@ -4,11 +4,11 @@ ginger: #namespace
   #qlearn parameters
   alpha: 0.01 # Learning Rate
   alpha_decay: 0.01
-  gamma: 1.0 # future rewards value 0 none 1 a lot
-  epsilon: 1.0 # exploration, 0 none 1 a lot
+  gamma: 0.9 # future action and reward influence to current, the larger gamma, the robot more focus on the future, less gamma, maybe easy to reach target
+  epsilon: 1.0 # choose random rate, 0 none 1 a lot
   epsilon_decay: 0.995 # how we reduse the exploration
   epsilon_min: 0.01 # minimum value that epsilon can have
-  batch_size: 64 # maximum size of the batches sampled from memory
+  batch_size: 256 # as large as possible(but not all data), otherwise, will loss some of the experience 
   episodes_training: 500
   episodes_running: 100
   n_win_ticks: 50 # If the mean of rewards is bigger than this and have passed min_episodes, the task is considered finished
@@ -18,18 +18,15 @@ ginger: #namespace
 
   # Ginger Realated parameters
   n_actions: 2180 # 3^7
-  n_observations: 8 # 7 angles + joint space distance
+  n_observations: 29 # init angles:7 + goal angles:7 + current angles:7 + every joint distance:7 + joint space distance:1 = 29 (cartesion space distance)
   n_dof: 7
   action_step: 0.1
-  # action_upper_limit
-  # action_lower_limit
-
-  step_punishment: -10
-  closer_reward: 1
+  step_punishment: -1
+  closer_reward_type: 1 # 1/(currentDist+(1/reached_goal_reward)) - 1/(initDist + (1/reached_goal_reward))
   impossible_movement_punishement: -100
-  reached_goal_reward: 100000000
+  reached_goal_reward: 100
 
-  init_angle:
+  start_angle:
     joint0: 0.0
     joint1: 0.0
     joint2: 0.0
@@ -39,11 +36,11 @@ ginger: #namespace
     joint6: 0.0
 
   goal_angle:
-    joint0: -0.7
-    joint1:  0.4
-    joint2:  0.8
-    joint3: -1.3
-    joint4: -0.8
+    joint0: -0.2
+    joint1:  0.3
+    joint2:  0.1
+    joint3: -0.3
+    joint4: -0.4
     joint5:  0.2
     joint6:  0.0
 

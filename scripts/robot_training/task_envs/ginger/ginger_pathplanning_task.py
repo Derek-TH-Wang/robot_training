@@ -27,14 +27,12 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         self.n_observations = rospy.get_param('/ginger/n_observations')
         self.n_dof = rospy.get_param('/ginger/n_dof')
 
-        self.init_angle = rospy.get_param('/ginger/init_angle')
+        self.start_angle = rospy.get_param('/ginger/start_angle')
         self.goal_angle = rospy.get_param('/ginger/goal_angle')
 
-        # self.action_upper_limit = rospy.get_param('/ginger/action_upper_limit')
-        # self.action_lower_limit = rospy.get_param('/ginger/action_lower_limit')
         self.action_step = rospy.get_param('/ginger/action_step')
         self.step_punishment = rospy.get_param('/ginger/step_punishment')
-        self.closer_reward = rospy.get_param('/ginger/closer_reward')
+        self.closer_reward_type = rospy.get_param('/ginger/closer_reward_type')
         self.impossible_movement_punishement = rospy.get_param(
             '/ginger/impossible_movement_punishement')
         self.reached_goal_reward = rospy.get_param(
@@ -42,26 +40,28 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
 
         self.max_distance = rospy.get_param('/ginger/max_distance')
 
+        self.init_angle = [self.start_angle["joint0"],
+                           self.start_angle["joint1"], self.start_angle["joint2"], self.start_angle["joint3"],
+                           self.start_angle["joint4"], self.start_angle["joint5"], self.start_angle["joint6"]]
         self.desired_angle = [self.goal_angle["joint0"],
                               self.goal_angle["joint1"], self.goal_angle["joint2"], self.goal_angle["joint3"],
                               self.goal_angle["joint4"], self.goal_angle["joint5"], self.goal_angle["joint6"]]
+
+        self.init_dist_from_des = 0
 
     def _set_init_joint(self):
         rospy.logdebug("Init Joint:")
         rospy.logdebug(self.init_angle)
 
-        # Init Joint Pose
-        init_angle = [self.init_angle["joint0"],
-                      self.init_angle["joint1"], self.init_angle["joint2"], self.init_angle["joint3"],
-                      self.init_angle["joint4"], self.init_angle["joint5"], self.init_angle["joint6"]]
-        self.movement_result = self.set_left_arm_position(init_angle)
+        self.movement_result = self.set_left_arm_position(self.init_angle)
         if self.movement_result:
             # INIT POSE
             rospy.logwarn("Moved To Init Position ")
-            self.last_joint_angle = init_angle
+            self.last_joint_angle = self.init_angle
             self.current_dist_from_des = self.calculate_distance_between(
                 self.desired_angle, self.last_joint_angle)
-            rospy.loginfo("INIT DISTANCE FROM GOAL==>" +
+            self.init_dist_from_des = self.current_dist_from_des
+            rospy.logdebug("INIT DISTANCE FROM GOAL==>" +
                           str(self.current_dist_from_des))
         else:
             rospy.logfatal("Moved To Init Position ERR")
@@ -106,19 +106,23 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         self.movement_result = self.set_left_arm_position(current_joint_angle)
         if self.movement_result:
             self.last_joint_angle = copy.deepcopy(current_joint_angle)
-        else:
-            rospy.logfatal("Impossible joint Position...." +
-                         str(current_joint_angle))
+        # else:
+            # rospy.logfatal("Impossible joint Position...." +
+            #              str(current_joint_angle))
 
     def _get_obs(self):
         current_joint_angle = self.get_left_arm_position()
-        new_dist_from_des = self.calculate_distance_between(
+        obs = copy.copy(current_joint_angle)
+        for i in range(self.n_dof):
+            obs.append(self.init_angle[i])
+        for i in range(self.n_dof):
+            obs.append(self.desired_angle[i])
+        for i in range(self.n_dof):
+            obs.append(self.desired_angle[i] - current_joint_angle[i])
+        norm_dist_from_des = self.calculate_distance_between(
             self.desired_angle, current_joint_angle)
-        obs = current_joint_angle
-        obs.append(new_dist_from_des)
-
+        obs.append(norm_dist_from_des)
         rospy.logdebug("OBSERVATIONS====>>>>>>>"+str(obs))
-
         return obs
 
     def _is_done(self, observations):
@@ -138,11 +142,11 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         Rewards getting to a position close to the goal.
         """
         current_pos = observations[:self.n_dof]
-        new_dist_from_des = observations[-1]
+        norm_dist_from_des = observations[-1]
 
         reward = self.calculate_reward(
-            self.movement_result, self.desired_angle, current_pos, new_dist_from_des)
-        rospy.logwarn(">>>REWARD>>>"+str(reward))
+            self.movement_result, self.desired_angle, current_pos, norm_dist_from_des)
+        rospy.logdebug(">>>REWARD>>>"+str(reward))
 
         return reward
 
@@ -162,11 +166,11 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
                 rospy.logfatal("Reached a Desired Position!")
         else:
             done = True
-            rospy.logfatal("action is done")
+            rospy.logfatal("movement_result is wrong")
 
         return done, reach_goal
 
-    def calculate_reward(self, movement_result, desired_angle, current_pos, new_dist_from_des):
+    def calculate_reward(self, movement_result, desired_angle, current_pos, norm_dist_from_des):
         """
         It calculated whather it has finished or nota and how much reward to give
         """
@@ -178,26 +182,25 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
             # Calculating Distance
             rospy.logdebug("desired_angle="+str(desired_angle))
             rospy.logdebug("current_pos="+str(current_pos))
-            rospy.loginfo("self.current_dist_from_des=" +
+            rospy.logdebug("self.current_dist_from_des=" +
                           str(self.current_dist_from_des))
-            rospy.loginfo("new_dist_from_des=" + str(new_dist_from_des))
+            rospy.logdebug("norm_dist_from_des=" + str(norm_dist_from_des))
 
-            delta_dist = new_dist_from_des - self.current_dist_from_des
+            if self.closer_reward_type == 1: # will append different reward calculation method in the future
+                reward = 1/(norm_dist_from_des+(1/self.reached_goal_reward)) - 1/(self.init_dist_from_des + (1/self.reached_goal_reward))
+
             if position_similar:
-                reward = self.reached_goal_reward
-                rospy.loginfo("Reached a Desired Position!")
+                reward += self.reached_goal_reward
+                rospy.logfatal("Reached a Desired Position!")
             else:
-                # reward = self.step_punishment
-                # rospy.logwarn(
-                #     "FURTHER FROM Desired Position!"+str(delta_dist))
-                if delta_dist < 0:
-                    reward = self.closer_reward
-                else:
-                    reward = self.step_punishment
+                reward += self.step_punishment
         else:
             reward = self.impossible_movement_punishement
+
+        rospy.info("norm_dist_from_des = " + str(norm_dist_from_des) + ", reward = " + str(reward))
+
         # We update the distance
-        self.current_dist_from_des = new_dist_from_des
+        self.current_dist_from_des = norm_dist_from_des
         rospy.logdebug("Updated Distance from GOAL==" +
                        str(self.current_dist_from_des))
         return reward

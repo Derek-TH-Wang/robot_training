@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 class DQNRobotSolver():
     def __init__(self, env, environment_name, n_observations, n_actions, n_win_ticks=195, min_episodes=100, max_env_steps=None, gamma=1.0, epsilon=1.0, epsilon_min=0.01, epsilon_log_decay=0.995, alpha=0.01, alpha_decay=0.01, batch_size=64, monitor=False, quiet=False):
-        self.memory = deque(maxlen=100000)
+        self.memory = deque(maxlen=256)
         self._env = env
         if monitor:
             rospy.loginfo("monitor")
@@ -42,16 +42,16 @@ class DQNRobotSolver():
         self.min_episodes = min_episodes
         self.batch_size = batch_size
         self.quiet = quiet
+        self.reached_goal_reward = rospy.get_param('/ginger/reached_goal_reward')
         if max_env_steps is not None:
             self._env._max_episode_steps = max_env_steps
 
         # Init model
         self.model = Sequential()
-        # input = input_dim, output = 24?, activation = relu
         self.model.add(
-            Dense(2000, input_dim=self.input_dim, activation='relu'))
-        # input = 24?, output = 48?, activation = relu
-        self.model.add(Dense(100, activation='relu'))
+            Dense(64, input_dim=self.input_dim, activation='sigmoid'))
+        #self.model.add(Dense(512, activation='sigmoid'))
+        self.model.add(Dense(1024, activation='sigmoid'))
         self.model.add(Dense(self.n_actions, activation='linear'))
         self.model.compile(loss='mse', optimizer=Adam(
             lr=self.alpha, decay=self.alpha_decay))
@@ -63,25 +63,25 @@ class DQNRobotSolver():
 
         if do_train and (np.random.random() <= epsilon):
             # We return a random sample form the available action space
-            rospy.logwarn(">>>>>Chosen Random ACTION")
+            rospy.logdebug(">>>>>Chosen Random ACTION")
             action_chosen = self._env.action_space.sample()
         else:
             # We return the best known prediction based on the state
             action_chosen = np.argmax(self.model.predict(state))
 
         if do_train:
-            rospy.logwarn("LEARNING A="+str(action_chosen) +
+            rospy.logdebug("LEARNING A="+str(action_chosen) +
                           ",E="+str(round(epsilon, 3))+",I="+str(iteration))
         else:
-            rospy.logwarn("RUNNING A="+str(action_chosen) +
+            rospy.logdebug("RUNNING A="+str(action_chosen) +
                           ",E="+str(round(epsilon, 3))+",I="+str(iteration))
 
         return action_chosen
 
     def get_epsilon(self, t):
-        new_epsilon = max(self.epsilon_min, min(
-            self.epsilon, 1.0 - math.log10((t + 1) * self.epsilon_decay)))
-        #new_epsilon = self.epsilon
+        #new_epsilon = max(self.epsilon_min, min(
+        #    self.epsilon, 1.0 - math.log10((t + 1) * self.epsilon_decay)))
+        new_epsilon = self.epsilon
         return new_epsilon
 
     def preprocess_state(self, state):
@@ -103,27 +103,22 @@ class DQNRobotSolver():
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
-        # plt.plot(history.history['loss'])
-        # plt.title("model loss")
-        # plt.ylabel("loss")
-        # plt.xlabel("epoch")
-        # plt.legend(["train", "test"], loc="upper left")
-        # plt.show()
         rospy.logwarn("loss = " + str(history.history['loss']))
 
     def run(self, num_episodes, do_train=False):
 
-        # scores = deque(maxlen=100)
+        scores = deque(maxlen=100)
 
         # for e in range(num_episodes):
         e = 0
         while not rospy.is_shutdown():
+            rospy.loginfo("-----------------------------------------")
 
             init_state = self._env.reset()
-
             state = self.preprocess_state(init_state)
             done = False
             i = 0
+            reward_in_episode = 0
             while not done:
                 # openai_ros doesnt support render for the moment
                 # self._env.render()
@@ -134,21 +129,13 @@ class DQNRobotSolver():
                 if do_train:
                     # If we are training we want to remember what I did and process it.
                     self.remember(state, action, reward, next_state, done)
+                reward_in_episode += reward
                 state = next_state
                 i += 1
 
-            # scores.append(i)
-            # mean_score = np.mean(scores)
-            # if mean_score >= self.n_win_ticks and e >= self.min_episodes:
-            #     if not self.quiet:
-            #         rospy.logwarn('Ran {} episodes. Solved after {} trials'.format(
-            #             e, e - self.min_episodes))
-            #     return e - self.min_episodes
-            # if e % 1 == 0 and not self.quiet:
-            #     rospy.logfatal('[Episode {}] - Mean survival time over last {} episodes was {} ticks.'.format(
-            #         e, self.min_episodes, mean_score))
-
-            if reach_goal:
+            rospy.loginfo("reward_in_episode = " + str(reward_in_episode))
+            scores.append(reward_in_episode)
+            if min(scores) > self.reached_goal_reward/10:
                 rospy.logfatal("reach goal, training finish")
                 return e
 
