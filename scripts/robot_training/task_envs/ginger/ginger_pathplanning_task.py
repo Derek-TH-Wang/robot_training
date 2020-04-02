@@ -166,7 +166,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
                 rospy.logfatal("Reached a Desired Position!")
         else:
             done = True
-            rospy.logfatal("movement_result is wrong")
+            # rospy.logfatal("movement_result is wrong")
 
         return done, reach_goal
 
@@ -194,10 +194,11 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
                 rospy.logfatal("Reached a Desired Position!")
             else:
                 reward += self.step_punishment
+
+            rospy.loginfo("norm_dist_from_des = " + str(round(norm_dist_from_des, 2)) + ", reward = " + str(round(reward, 2)))
         else:
             reward = self.impossible_movement_punishement
-
-        rospy.info("norm_dist_from_des = " + str(norm_dist_from_des) + ", reward = " + str(reward))
+            rospy.logfatal("movement_result is wrong")
 
         # We update the distance
         self.current_dist_from_des = norm_dist_from_des

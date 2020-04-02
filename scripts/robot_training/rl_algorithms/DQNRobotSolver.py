@@ -50,8 +50,8 @@ class DQNRobotSolver():
         self.model = Sequential()
         self.model.add(
             Dense(64, input_dim=self.input_dim, activation='sigmoid'))
-        #self.model.add(Dense(512, activation='sigmoid'))
-        self.model.add(Dense(1024, activation='sigmoid'))
+        self.model.add(Dense(512, activation='sigmoid'))
+        #self.model.add(Dense(1024, activation='sigmoid'))
         self.model.add(Dense(self.n_actions, activation='linear'))
         self.model.compile(loss='mse', optimizer=Adam(
             lr=self.alpha, decay=self.alpha_decay))
@@ -133,7 +133,7 @@ class DQNRobotSolver():
                 state = next_state
                 i += 1
 
-            rospy.loginfo("reward_in_episode = " + str(reward_in_episode))
+            rospy.logwarn("reward_in_episode = " + str(reward_in_episode))
             scores.append(reward_in_episode)
             if min(scores) > self.reached_goal_reward/10:
                 rospy.logfatal("reach goal, training finish")

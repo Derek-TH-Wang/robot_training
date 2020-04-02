@@ -21,9 +21,9 @@ ginger: #namespace
   n_observations: 29 # init angles:7 + goal angles:7 + current angles:7 + every joint distance:7 + joint space distance:1 = 29 (cartesion space distance)
   n_dof: 7
   action_step: 0.1
-  step_punishment: -1
+  step_punishment: 0
   closer_reward_type: 1 # 1/(currentDist+(1/reached_goal_reward)) - 1/(initDist + (1/reached_goal_reward))
-  impossible_movement_punishement: -100
+  impossible_movement_punishement: -10
   reached_goal_reward: 100
 
   start_angle:
