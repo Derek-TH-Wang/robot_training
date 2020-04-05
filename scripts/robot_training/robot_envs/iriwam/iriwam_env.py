@@ -11,7 +11,7 @@ from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryG
 from trajectory_msgs.msg import JointTrajectoryPoint
 from moveit_msgs.msg import JointLimits
 from robot_training.robot_sim.gazebo_envs import robot_gazebo_env
-from robot_training.util.utility import  *
+from robot_training.util.utility import *
 
 
 class IriWamEnv(robot_gazebo_env.RobotGazeboEnv):

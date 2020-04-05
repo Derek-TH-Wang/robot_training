@@ -2,7 +2,15 @@
 Robot reinforcement lerning training using OpenAI Gym in Ros Env  
 
 ## system equirement:  
-ubuntu18.04, ros-melodic, python2 tensorflow1.13.0, cuda10  
+ubuntu18.04, ros-melodic,cuda10  
+fetch, iriwam demo: python2 tensorflow1.13.0  
+ginger: python3 tensorflow1.14.0  
+```
+sudo pip3 install rospkg  
+sudo pip3 install defusedxml  
+sudo pip2 install keras  
+sudo pip3 install keras  
+```
 
 ## start training:  
 ### fetch robot demo:  

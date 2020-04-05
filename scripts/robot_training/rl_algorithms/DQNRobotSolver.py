@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 
 class DQNRobotSolver():
-    def __init__(self, env, environment_name, n_observations, n_actions, n_win_ticks=195, min_episodes=100, max_env_steps=None, gamma=1.0, epsilon=1.0, epsilon_min=0.01, epsilon_log_decay=0.995, reached_goal_reward = 100, alpha=0.01, alpha_decay=0.01, batch_size=64, replay_buffer_size=3000, monitor=False, quiet=False):
+    def __init__(self, env, environment_name, n_observations, n_actions, n_win_ticks=195, min_episodes=100, max_env_steps=None, gamma=1.0, epsilon=1.0, epsilon_min=0.01, epsilon_log_decay=0.995, reached_goal_reward=100, alpha=0.01, alpha_decay=0.01, batch_size=64, replay_buffer_size=3000, monitor=False, quiet=False):
         self._env = env
         if monitor:
             rospy.loginfo("monitor")
@@ -30,7 +30,7 @@ class DQNRobotSolver():
                 rospy.loginfo("Created folder="+str(outdir))
             self._env = gym.wrappers.Monitor(self._env, outdir, force=True)
 
-        self.memory = deque(maxlen = replay_buffer_size)
+        self.memory = deque(maxlen=replay_buffer_size)
         self.input_dim = n_observations
         self.n_actions = n_actions
         self.gamma = gamma
@@ -52,9 +52,9 @@ class DQNRobotSolver():
         #self.tensorboard = TensorBoard(log_dir=pkg_path + '/learning_result/logs/{}'.format(self.model_name))
         self.model = Sequential()
         self.model.add(
-            Dense(128, input_dim=self.input_dim, activation='tanh'))
-        self.model.add(Dense(256, activation='tanh'))
-        self.model.add(Dense(512, activation='tanh'))
+            Dense(256, input_dim=self.input_dim, activation='tanh'))
+        self.model.add(Dense(1024, activation='tanh'))
+        self.model.add(Dense(4096, activation='tanh'))
         self.model.add(Dense(self.n_actions, activation='linear'))
         self.model.compile(loss='mse', optimizer=Adam(
             lr=self.alpha, decay=self.alpha_decay))
@@ -75,15 +75,15 @@ class DQNRobotSolver():
 
         if do_train:
             rospy.logdebug("LEARNING A="+str(action_chosen) +
-                          ",E="+str(round(epsilon, 3))+",I="+str(iteration))
+                           ",E="+str(round(epsilon, 3))+",I="+str(iteration))
         else:
             rospy.logdebug("RUNNING A="+str(action_chosen) +
-                          ",E="+str(round(epsilon, 3))+",I="+str(iteration))
+                           ",E="+str(round(epsilon, 3))+",I="+str(iteration))
 
         return action_chosen
 
     def get_epsilon(self, t):
-        #new_epsilon = max(self.epsilon_min, min(
+        # new_epsilon = max(self.epsilon_min, min(
         #    self.epsilon, 1.0 - math.log10((t + 1) * self.epsilon_decay)))
         new_epsilon = self.epsilon
         return new_epsilon
@@ -98,13 +98,13 @@ class DQNRobotSolver():
         for state, action, reward, next_state, done in minibatch:
             y_target = self.model.predict(state)
             #rospy.logwarn("action = " + str(action))
-            #rospy.logfatal(y_target)
+            # rospy.logfatal(y_target)
             y_target[0][action] = reward if done else reward + \
                 self.gamma * np.max(self.model.predict(next_state)[0])
-            #rospy.logfatal(y_target)
+            # rospy.logfatal(y_target)
             x_batch.append(state[0])
             y_batch.append(y_target[0])
-        #history = self.model.fit(np.array(x_batch), np.array(y_batch),
+        # history = self.model.fit(np.array(x_batch), np.array(y_batch),
         #                         batch_size=len(x_batch), verbose=0, callbacks=[self.tensorboard])
         history = self.model.fit(np.array(x_batch), np.array(y_batch),
                                  batch_size=len(x_batch), verbose=0)

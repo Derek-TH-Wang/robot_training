@@ -6,7 +6,6 @@ import rosparam
 import rospkg
 import os
 import roslaunch
-import git
 import sys
 import subprocess
 
@@ -42,24 +41,27 @@ def EnvRegister(task_env, max_episode_steps=10000):
     # We check that it was really registered
     all_envs = envs.registry.all()
     env_ids = [env_spec.id for env_spec in all_envs]
-    assert (task_env in env_ids), "The Task_Robot_ENV given is not Registered ==>" +  str(task_env)
-    
-    rospy.loginfo("Register of Task Env went OK, lets make the env..."+str(task_env))
+    assert (task_env in env_ids), "The Task_Robot_ENV given is not Registered ==>" + str(task_env)
+
+    rospy.loginfo(
+        "Register of Task Env went OK, lets make the env..."+str(task_env))
     env = gym.make(task_env)
     rospy.logwarn("gym make finish")
     return env
+
 
 def LoadYamlFileParamsTest(rospackage_name, rel_path_from_package_to_file, yaml_file_name):
 
     rospack = rospkg.RosPack()
     pkg_path = rospack.get_path(rospackage_name)
-    config_dir = os.path.join(pkg_path, rel_path_from_package_to_file) 
+    config_dir = os.path.join(pkg_path, rel_path_from_package_to_file)
     path_config_file = os.path.join(config_dir, yaml_file_name)
-    
-    paramlist=rosparam.load_file(path_config_file)
-    
+
+    paramlist = rosparam.load_file(path_config_file)
+
     for params, ns in paramlist:
-        rosparam.upload_params(ns,params)
+        rosparam.upload_params(ns, params)
+
 
 class ROSLauncher(object):
     def __init__(self, rospackage_name, launch_file_name, ros_ws_abspath="/home/derek/openai_ws"):
@@ -79,7 +81,8 @@ class ROSLauncher(object):
             rospy.logwarn("path_launch_file_name=="+str(path_launch_file_name))
 
             source_env_command = "source "+ros_ws_abspath+"/devel/setup.bash;"
-            roslaunch_command = "roslaunch  {0} {1}".format(rospackage_name, launch_file_name)
+            roslaunch_command = "roslaunch  {0} {1}".format(
+                rospackage_name, launch_file_name)
             command = source_env_command+roslaunch_command
             rospy.logwarn("Launching command="+str(command))
 
@@ -100,6 +103,6 @@ class ROSLauncher(object):
             self.launch.start()
             """
             rospy.loginfo(">>>>>>>>>STARTED Roslaunch-->" +
-                            str(self._launch_file_name))
+                          str(self._launch_file_name))
         else:
             rospy.logfatal("No package found")

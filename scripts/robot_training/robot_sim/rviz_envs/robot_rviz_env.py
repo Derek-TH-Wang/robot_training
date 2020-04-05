@@ -74,7 +74,7 @@ class RobotRvizEnv(gym.Env):
             self.episode_num
         )
         rospy.logdebug("PUBLISHING REWARD...DONE=" +
-                      str(self.cumulated_episode_reward)+",EP="+str(self.episode_num))
+                       str(self.cumulated_episode_reward)+",EP="+str(self.episode_num))
 
         self.episode_num += 1
         self.cumulated_episode_reward = 0

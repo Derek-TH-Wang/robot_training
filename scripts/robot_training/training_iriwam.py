@@ -5,7 +5,7 @@ import time
 import rospy
 import rospkg
 from gym import wrappers
-from robot_training.util.utility import  EnvRegister
+from robot_training.util.utility import EnvRegister
 from robot_training.rl_algorithms import QLearningRobotSolver
 
 
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     rospack = rospkg.RosPack()
     pkg_path = rospack.get_path('robot_training')
     outdir = pkg_path + '/training_results'
-    
+
     rospy.logwarn("env_register")
     env = EnvRegister(task_env_name)
     env = wrappers.Monitor(env, outdir, force=True)
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     # Initialises the algorithm that we are going to use for learning
     rospy.logwarn("Starting Learning")
     qlearn = QLearningRobotSolver.QLearn(actions=range(env.action_space.n),
-                           alpha=Alpha, gamma=Gamma, epsilon=Epsilon)
+                                         alpha=Alpha, gamma=Gamma, epsilon=Epsilon)
     initial_epsilon = qlearn.epsilon
 
     start_time = time.time()

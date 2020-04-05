@@ -9,7 +9,7 @@ import trajectory_msgs.msg
 from gazebo_msgs.srv import GetWorldProperties, GetModelState
 from sensor_msgs.msg import JointState
 from robot_training.robot_sim.gazebo_envs import robot_gazebo_env
-from robot_training.util.utility import  *
+from robot_training.util.utility import *
 
 
 class FetchEnv(robot_gazebo_env.RobotGazeboEnv):

@@ -273,7 +273,8 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
 
         has_reached_the_block = self.reached_bowl(
             distance_laser, magnitude_image)
-        too_faraway_bowl_b = self.too_faraway_bowl(distance_laser, magnitude_image)
+        too_faraway_bowl_b = self.too_faraway_bowl(
+            distance_laser, magnitude_image)
 
         done = has_reached_the_block or too_faraway_bowl_b
 
@@ -538,7 +539,8 @@ class IriWamTcpToBowlEnv(iriwam_env.IriWamEnv):
             res_black = cv2.bitwise_and(crop_img, crop_img)
 
             # Draw the centroid in the resultut image
-            cv2.circle(res_black, (int(cx_red), int(cy_red)), 10, (255, 0, 0), -1)
+            cv2.circle(res_black, (int(cx_red), int(cy_red)),
+                       10, (255, 0, 0), -1)
             cv2.circle(res_black, (int(cx_black), int(cy_black)),
                        10, (0, 255, 0), -1)
 

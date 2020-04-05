@@ -3,11 +3,12 @@ import os
 import sys
 import rospy
 import rospkg
-from robot_training.util.utility import  EnvRegister
+from robot_training.util.utility import EnvRegister
 from robot_training.rl_algorithms.DQNRobotSolver import DQNRobotSolver
 
 if __name__ == '__main__':
-    rospy.init_node('fetch_n1try_algorithm', anonymous=True, log_level=rospy.WARN)
+    rospy.init_node('fetch_n1try_algorithm',
+                    anonymous=True, log_level=rospy.WARN)
 
     rospy.logwarn("read parm from yaml")
     task_env_name = rospy.get_param('/fetch/task_and_robot_environment_name')

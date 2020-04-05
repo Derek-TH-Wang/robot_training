@@ -63,7 +63,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
                 self.desired_angle, self.last_joint_angle)
             self.init_dist_from_des = self.current_dist_from_des
             rospy.logdebug("INIT DISTANCE FROM GOAL==>" +
-                          str(self.current_dist_from_des))
+                           str(self.current_dist_from_des))
         else:
             rospy.logfatal("Moved To Init Position ERR")
             assert False, "Desired GOAL EE is not possible"
@@ -109,7 +109,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
             self.last_joint_angle = copy.deepcopy(current_joint_angle)
         else:
             rospy.logfatal("Impossible joint Position...." +
-                         str(current_joint_angle))
+                           str(current_joint_angle))
 
     def _get_obs(self):
         current_joint_angle = self.get_left_arm_position()
@@ -184,7 +184,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
             rospy.logdebug("desired_angle="+str(desired_angle))
             rospy.logdebug("current_pos="+str(current_pos))
             rospy.logdebug("self.current_dist_from_des=" +
-                          str(self.current_dist_from_des))
+                           str(self.current_dist_from_des))
             rospy.logdebug("norm_dist_from_des=" + str(norm_dist_from_des))
 
             reward = 0.0
@@ -192,17 +192,19 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
                 reward += self.reached_goal_reward
                 rospy.logfatal("Reached a Desired Position!")
             else:
-                if self.closer_reward_type == 0: # will append different reward calculation method in the future
+                if self.closer_reward_type == 0:  # will append different reward calculation method in the future
                     if self.current_dist_from_des - norm_dist_from_des > 0.0:
                         reward = self.step_bonus
                     else:
                         reward = self.step_punishment
                 elif self.closer_reward_type == 1:
                     #reward = 1/(norm_dist_from_des+(1/self.reached_goal_reward)) - 1/(self.init_dist_from_des + (1/self.reached_goal_reward))
-                    reward = -(self.reached_goal_reward/pow((self.init_dist_from_des), 3))*pow((norm_dist_from_des - self.init_dist_from_des), 3)
+                    reward = -(self.reached_goal_reward/pow((self.init_dist_from_des), 3)
+                               )*pow((norm_dist_from_des - self.init_dist_from_des), 3)
                 #reward += self.step_punishment
 
-            rospy.loginfo("norm_dist_from_des = " + str(round(norm_dist_from_des, 2)) + ", reward = " + str(round(reward, 2)))
+            rospy.loginfo("norm_dist_from_des = " + str(round(norm_dist_from_des, 2)
+                                                        ) + ", reward = " + str(round(reward, 2)))
         else:
             reward = self.impossible_movement_punishement
             rospy.logfatal("movement_result is wrong")

@@ -9,7 +9,7 @@ ginger: #namespace
   epsilon_decay: 0.995 # how we reduse the exploration
   epsilon_min: 0.01 # minimum value that epsilon can have
   replay_buffer_size: 3000
-  batch_size: 2000 # need larger than n_actions!!! as large as possible(but not all data?), otherwise, will loss some of the experience 
+  batch_size: 2000 # need larger than n_actions!!! as large as possible(but not all data?), otherwise, will loss some of the experience
   episodes_training: 500
   episodes_running: 100
   n_win_ticks: 50 # If the mean of rewards is bigger than this and have passed min_episodes, the task is considered finished
@@ -40,12 +40,12 @@ ginger: #namespace
 
   goal_angle:
     joint0: -0.2
-    joint1:  0.2
-    joint2:  0.1
+    joint1: 0.2
+    joint2: 0.1
     joint3: -0.2
     joint4: -0.2
-    joint5:  0.2
-    joint6:  0.0
+    joint5: 0.2
+    joint6: 0.0
 
   max_distance: 1.0 # Maximum distance from EE to the desired GOAL EE
 
