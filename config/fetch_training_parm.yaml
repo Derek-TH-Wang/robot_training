@@ -9,6 +9,7 @@ fetch: #namespace
   epsilon: 1.0 # exploration, 0 none 1 a lot
   epsilon_decay: 0.995 # how we reduse the exploration
   epsilon_min: 0.01 # minimum value that epsilon can have
+  replay_buffer_size: 1000
   batch_size: 64 # maximum size of the batches sampled from memory
   episodes_training: 40
   episodes_running: 10

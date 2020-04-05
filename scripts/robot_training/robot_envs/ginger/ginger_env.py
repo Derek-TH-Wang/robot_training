@@ -47,14 +47,15 @@ class GingerEnv(robot_rviz_env.RobotRvizEnv):
         self.main_body_lower_limit = [-0.627794, -
                                       1.570796, -0.781907, -0.720820]
         self.main_body_upper_limit = [0.539830, 1.570796, 0.991347, 0.720820]
-        self.left_arm_lower_limit = [-2.26, -0.016231, -
+        # have to increase joint12,19,14,21 range
+        self.left_arm_lower_limit = [-2.26, -0.16231, -
                                      1.570796, -1.570796, -1.570796, -0.738274, -0.523598]
         self.left_arm_upper_limit = [
-            0.7854, 1.730843, 0.785398, 0.017500, 1.570796, 0.738274, 0.523598]
+            0.7854, 1.730843, 0.785398, 0.3, 1.570796, 0.738274, 0.523598]
         self.right_arm_lower_limit = [-2.26, -1.730843, -
                                       0.785398, -1.570796, -1.570796, -0.738274, -0.523598]
         self.right_arm_upper_limit = [
-            0.7854, 0.016231, 1.570796, 0.017500, 1.570796, 0.738274, 0.523598]
+            0.7854, 0.16231, 1.570796, 0.3, 1.570796, 0.738274, 0.523598]
 
         self._check_all_systems_ready()
 

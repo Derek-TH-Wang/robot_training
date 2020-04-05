@@ -2,13 +2,14 @@ ginger: #namespace
   task_and_robot_environment_name: "GingerPathPlanning-v0"
 
   #qlearn parameters
-  alpha: 0.01 # Learning Rate
+  alpha: 0.005 # Learning Rate
   alpha_decay: 0.01
-  gamma: 0.9 # future action and reward influence to current, the larger gamma, the robot more focus on the future, less gamma, maybe easy to reach target
-  epsilon: 1.0 # choose random rate, 0 none 1 a lot
+  gamma: 0.5 # 1-1/(n), n:min step to goal. future action and reward influence to current, the larger gamma, the robot more focus on the future, less gamma, maybe easy to reach target
+  epsilon: 0.8 # choose random rate, 0 none 1 a lot, in a complex task, large is beter
   epsilon_decay: 0.995 # how we reduse the exploration
   epsilon_min: 0.01 # minimum value that epsilon can have
-  batch_size: 256 # as large as possible(but not all data), otherwise, will loss some of the experience 
+  replay_buffer_size: 3000
+  batch_size: 2000 # need larger than n_actions!!! as large as possible(but not all data?), otherwise, will loss some of the experience 
   episodes_training: 500
   episodes_running: 100
   n_win_ticks: 50 # If the mean of rewards is bigger than this and have passed min_episodes, the task is considered finished
@@ -21,9 +22,11 @@ ginger: #namespace
   n_observations: 29 # init angles:7 + goal angles:7 + current angles:7 + every joint distance:7 + joint space distance:1 = 29 (cartesion space distance)
   n_dof: 7
   action_step: 0.1
-  step_punishment: 0
-  closer_reward_type: 1 # 1/(currentDist+(1/reached_goal_reward)) - 1/(initDist + (1/reached_goal_reward))
-  impossible_movement_punishement: -10
+  # because of the large action space, reward need to be setted as some big number, otherwise, the loss of the neural network will always be tiny
+  step_punishment: -100
+  step_bonus: 100
+  closer_reward_type: 1 # -(reached_goal_reward/(InitDist)^3)*(currentDist - InitDist)^3
+  impossible_movement_punishement: -0
   reached_goal_reward: 100
 
   start_angle:
@@ -37,10 +40,10 @@ ginger: #namespace
 
   goal_angle:
     joint0: -0.2
-    joint1:  0.3
+    joint1:  0.2
     joint2:  0.1
-    joint3: -0.3
-    joint4: -0.4
+    joint3: -0.2
+    joint4: -0.2
     joint5:  0.2
     joint6:  0.0
 

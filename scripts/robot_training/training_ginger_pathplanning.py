@@ -25,6 +25,7 @@ if __name__ == '__main__':
     epsilon = rospy.get_param('/ginger/epsilon')
     epsilon_log_decay = rospy.get_param('/ginger/epsilon_decay')
     epsilon_min = rospy.get_param('/ginger/epsilon_min')
+    replay_buffer_size = rospy.get_param('/ginger/replay_buffer_size')
     batch_size = rospy.get_param('/ginger/batch_size')
     n_episodes_training = rospy.get_param('/ginger/episodes_training')
     n_episodes_running = rospy.get_param('/ginger/episodes_running')
@@ -35,6 +36,7 @@ if __name__ == '__main__':
     n_actions = rospy.get_param('/ginger/n_actions')
     n_observations = rospy.get_param('/ginger/n_observations')
     action_step = rospy.get_param('/ginger/action_step')
+    reached_goal_reward = rospy.get_param('/ginger/reached_goal_reward')
 
     max_env_steps = None
 
@@ -61,9 +63,11 @@ if __name__ == '__main__':
                            epsilon,
                            epsilon_min,
                            epsilon_log_decay,
+                           reached_goal_reward,
                            alpha,
                            alpha_decay,
                            batch_size,
+                           replay_buffer_size,
                            monitor,
                            quiet)
     agent.run(num_episodes=n_episodes_training, do_train=True)

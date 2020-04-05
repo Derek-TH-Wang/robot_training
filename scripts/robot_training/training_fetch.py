@@ -26,8 +26,10 @@ if __name__ == '__main__':
     alpha = rospy.get_param('/fetch/alpha')
     alpha_decay = rospy.get_param('/fetch/alpha_decay')
     batch_size = rospy.get_param('/fetch/batch_size')
+    replay_buffer_size = rospy.get_param('/ginger/replay_buffer_size')
     monitor = rospy.get_param('/fetch/monitor')
     quiet = rospy.get_param('/fetch/quiet')
+    reached_goal_reward = rospy.get_param('/fetch/reached_goal_reward')
     rospackage_name = "robot_training"
     model_name = "fetch_dqn"
 
@@ -46,9 +48,11 @@ if __name__ == '__main__':
                            epsilon,
                            epsilon_min,
                            epsilon_log_decay,
+                           reached_goal_reward,
                            alpha,
                            alpha_decay,
                            batch_size,
+                           replay_buffer_size,
                            monitor,
                            quiet)
     agent.run(num_episodes=n_episodes_training, do_train=True)

@@ -13,11 +13,11 @@ import rospkg
 import rospy
 import os
 import matplotlib.pyplot as plt
+#from keras.callbacks import TensorBoard
 
 
 class DQNRobotSolver():
-    def __init__(self, env, environment_name, n_observations, n_actions, n_win_ticks=195, min_episodes=100, max_env_steps=None, gamma=1.0, epsilon=1.0, epsilon_min=0.01, epsilon_log_decay=0.995, alpha=0.01, alpha_decay=0.01, batch_size=64, monitor=False, quiet=False):
-        self.memory = deque(maxlen=256)
+    def __init__(self, env, environment_name, n_observations, n_actions, n_win_ticks=195, min_episodes=100, max_env_steps=None, gamma=1.0, epsilon=1.0, epsilon_min=0.01, epsilon_log_decay=0.995, reached_goal_reward = 100, alpha=0.01, alpha_decay=0.01, batch_size=64, replay_buffer_size=3000, monitor=False, quiet=False):
         self._env = env
         if monitor:
             rospy.loginfo("monitor")
@@ -30,6 +30,7 @@ class DQNRobotSolver():
                 rospy.loginfo("Created folder="+str(outdir))
             self._env = gym.wrappers.Monitor(self._env, outdir, force=True)
 
+        self.memory = deque(maxlen = replay_buffer_size)
         self.input_dim = n_observations
         self.n_actions = n_actions
         self.gamma = gamma
@@ -42,16 +43,18 @@ class DQNRobotSolver():
         self.min_episodes = min_episodes
         self.batch_size = batch_size
         self.quiet = quiet
-        self.reached_goal_reward = rospy.get_param('/ginger/reached_goal_reward')
+        self.reached_goal_reward = reached_goal_reward
         if max_env_steps is not None:
             self._env._max_episode_steps = max_env_steps
 
         # Init model
+        #self.model_name = "dqn_ginger_pathplanning"
+        #self.tensorboard = TensorBoard(log_dir=pkg_path + '/learning_result/logs/{}'.format(self.model_name))
         self.model = Sequential()
         self.model.add(
-            Dense(64, input_dim=self.input_dim, activation='sigmoid'))
-        self.model.add(Dense(512, activation='sigmoid'))
-        #self.model.add(Dense(1024, activation='sigmoid'))
+            Dense(128, input_dim=self.input_dim, activation='tanh'))
+        self.model.add(Dense(256, activation='tanh'))
+        self.model.add(Dense(512, activation='tanh'))
         self.model.add(Dense(self.n_actions, activation='linear'))
         self.model.compile(loss='mse', optimizer=Adam(
             lr=self.alpha, decay=self.alpha_decay))
@@ -63,11 +66,12 @@ class DQNRobotSolver():
 
         if do_train and (np.random.random() <= epsilon):
             # We return a random sample form the available action space
-            rospy.logdebug(">>>>>Chosen Random ACTION")
             action_chosen = self._env.action_space.sample()
+            rospy.logwarn(">>>>>Chosen Random ACTION = " + str(action_chosen))
         else:
             # We return the best known prediction based on the state
             action_chosen = np.argmax(self.model.predict(state))
+            rospy.logwarn(">>>>>Chosen Predict ACTION = " + str(action_chosen))
 
         if do_train:
             rospy.logdebug("LEARNING A="+str(action_chosen) +
@@ -93,11 +97,15 @@ class DQNRobotSolver():
             self.memory, min(len(self.memory), batch_size))
         for state, action, reward, next_state, done in minibatch:
             y_target = self.model.predict(state)
+            #rospy.logwarn("action = " + str(action))
+            #rospy.logfatal(y_target)
             y_target[0][action] = reward if done else reward + \
                 self.gamma * np.max(self.model.predict(next_state)[0])
+            #rospy.logfatal(y_target)
             x_batch.append(state[0])
             y_batch.append(y_target[0])
-
+        #history = self.model.fit(np.array(x_batch), np.array(y_batch),
+        #                         batch_size=len(x_batch), verbose=0, callbacks=[self.tensorboard])
         history = self.model.fit(np.array(x_batch), np.array(y_batch),
                                  batch_size=len(x_batch), verbose=0)
         if self.epsilon > self.epsilon_min:
