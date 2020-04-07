@@ -16,7 +16,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         self.get_params()
         self.action_space = spaces.Discrete(self.n_actions)
         self.observation_space = spaces.Box(-np.inf, np.inf,
-                                            shape=(self.n_observations, ), dtype='float64')
+                                            shape=(self.n_observations, ), dtype='float32')
         super(GingerTaskEnv, self).__init__()
         rospy.loginfo("========= Out FetchTestEnv")
 

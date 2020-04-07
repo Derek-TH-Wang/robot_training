@@ -143,7 +143,7 @@ class DQNRobotSolver():
 
             rospy.logwarn("reward_in_episode = " + str(reward_in_episode))
             scores.append(reward_in_episode)
-            if min(scores) > self.reached_goal_reward/10:
+            if min(scores) > self.reached_goal_reward:
                 rospy.logfatal("reach goal, training finish")
                 return e
 
