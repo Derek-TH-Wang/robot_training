@@ -10,6 +10,9 @@ sudo pip3 install rospkg
 sudo pip3 install defusedxml  
 sudo pip2 install keras  
 sudo pip3 install keras  
+sudo apt-get install ros-melodic-costmap-2d
+sudo apt-get install ros-melodic-robot-controllers
+sudo apt-get install ros-melodic-effort-controllers
 ```
 
 ## start training:  
