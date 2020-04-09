@@ -18,6 +18,11 @@ class RobotRvizEnv(gym.Env):
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
+    
+    # def render(self):
+    #     # openai_ros doesnt support render for the moment
+    #     rospy.sleep(0.005)
+    #     return
 
     def step(self, action):
         """
@@ -35,11 +40,11 @@ class RobotRvizEnv(gym.Env):
         rospy.logdebug("START STEP Rviz")
 
         self._set_action(action)
+        rospy.sleep(0.005)
         obs = self._get_obs()
         done, reach_goal = self._is_done(obs)
         reward = self._compute_reward(obs, done)
         self.cumulated_episode_reward += reward
-        rospy.sleep(0.005)
         rospy.logdebug("-----------------------------------------")
 
         return obs, reward, done, reach_goal

@@ -1,15 +1,15 @@
 ginger: #namespace
   task_and_robot_environment_name: "GingerPathPlanning-v0"
 
-  #qlearn parameters
+  # DQN algorithm parameters
   alpha: 0.002 # Learning Rate
   alpha_decay: 0.01
   gamma: 0.5 # 1-1/(n), n:min step to goal. future action and reward influence to current, the larger gamma, the robot more focus on the future, less gamma, maybe easy to reach target
-  epsilon: 1.0 # choose random rate, 0 none 1 a lot, in a complex task, large is beter
-  epsilon_decay: 0.9995 # how we reduse the exploration, 10000 times will reduce to 0.006
+  epsilon: 0.8 # choose random rate, 0 none 1 a lot, in a complex task, large is beter
+  epsilon_decay: 0.999 # how we reduse the exploration, 0.9995: 10000 times will reduce to 0.006
   epsilon_min: 0.01 # minimum value that epsilon can have
-  replay_buffer_size: 100000
-  batch_size: 80000 # need larger than n_actions!!! as large as possible(but not all data?), otherwise, will loss some of the experience
+  replay_buffer_size: 20000
+  batch_size: 10000 # need larger than n_actions!!! as large as possible(but not all data?), otherwise, will loss some of the experience
   episodes_training: 500
   episodes_running: 100
   n_win_ticks: 50 # If the mean of rewards is bigger than this and have passed min_episodes, the task is considered finished
@@ -17,7 +17,7 @@ ginger: #namespace
   monitor: True
   quiet: False
 
-  # Ginger Realated parameters
+  # Ginger Task Env Realated parameters
   n_actions: 2180 # 3^7
   n_observations: 29 # init angles:7 + goal angles:7 + current angles:7 + every joint distance:7 + joint space distance:1 = 29 (cartesion space distance)
   n_dof: 7

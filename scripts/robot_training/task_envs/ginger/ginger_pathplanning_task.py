@@ -17,7 +17,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         self.action_space = spaces.Discrete(self.n_actions)
         self.observation_space = spaces.Box(-np.inf, np.inf,
                                             shape=(self.n_observations, ), dtype='float32')
-        super(GingerTaskEnv, self).__init__()
+        super(GingerTaskEnv, self).__init__(use_sim_env = False)
         rospy.loginfo("========= Out FetchTestEnv")
 
     def get_params(self):
@@ -104,6 +104,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
                 temp_action = temp_action - 2*temp_compare
 
         # Apply action to simulation.
+        rospy.logdebug("set = " + str(current_joint_angle))
         self.movement_result = self.set_left_arm_position(current_joint_angle)
         if self.movement_result:
             self.last_joint_angle = copy.deepcopy(current_joint_angle)
@@ -113,6 +114,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
 
     def _get_obs(self):
         current_joint_angle = self.get_left_arm_position()
+        rospy.logdebug("get = " + str(current_joint_angle))
         obs = copy.deepcopy(current_joint_angle)
         for i in range(self.n_dof):
             obs.append(self.init_angle[i])

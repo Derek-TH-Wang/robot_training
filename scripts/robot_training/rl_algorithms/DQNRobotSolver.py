@@ -13,7 +13,7 @@ import rospkg
 import rospy
 import os
 import matplotlib.pyplot as plt
-#from keras.callbacks import TensorBoard
+from keras.callbacks import TensorBoard
 
 
 class DQNRobotSolver():
@@ -48,13 +48,14 @@ class DQNRobotSolver():
             self._env._max_episode_steps = max_env_steps
 
         # Init model
-        #self.model_name = "dqn_ginger_pathplanning"
-        #self.tensorboard = TensorBoard(log_dir=pkg_path + '/learning_result/logs/{}'.format(self.model_name))
+        self.model_name = "dqn_ginger_pathplanning"
+        self.tensorboard = TensorBoard(log_dir=pkg_path + '/learning_result/logs/{}'.format(self.model_name))
         self.model = Sequential()
         self.model.add(
-            Dense(256, input_dim=self.input_dim, activation='tanh'))
+            Dense(512, input_dim=self.input_dim, activation='tanh'))
         self.model.add(Dense(1024, activation='tanh'))
-        self.model.add(Dense(4096, activation='tanh'))
+        self.model.add(Dense(2048, activation='tanh'))
+        self.model.add(Dense(2048, activation='tanh'))
         self.model.add(Dense(self.n_actions, activation='linear'))
         self.model.compile(loss='mse', optimizer=Adam(
             lr=self.alpha, decay=self.alpha_decay))
@@ -104,14 +105,12 @@ class DQNRobotSolver():
             # rospy.logfatal(y_target)
             x_batch.append(state[0])
             y_batch.append(y_target[0])
-        # history = self.model.fit(np.array(x_batch), np.array(y_batch),
+        # self.history = self.model.fit(np.array(x_batch), np.array(y_batch),
         #                         batch_size=len(x_batch), verbose=0, callbacks=[self.tensorboard])
-        history = self.model.fit(np.array(x_batch), np.array(y_batch),
+        self.history = self.model.fit(np.array(x_batch), np.array(y_batch),
                                  batch_size=len(x_batch), verbose=0)
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
-
-        rospy.logwarn("loss = " + str(history.history['loss']))
 
     def run(self, num_episodes, do_train=False):
 
@@ -141,7 +140,6 @@ class DQNRobotSolver():
                 state = next_state
                 i += 1
 
-            rospy.logwarn("reward_in_episode = " + str(reward_in_episode))
             scores.append(reward_in_episode)
             if min(scores) > self.reached_goal_reward:
                 rospy.logfatal("reach goal, training finish")
@@ -149,6 +147,11 @@ class DQNRobotSolver():
 
             if do_train:
                 self.replay(self.batch_size)
+
+            rospy.logwarn("episode = " + str(e) + 
+                          ", reward_in_episode = " + str(reward_in_episode) + 
+                          ", loss = " + str(self.history.history['loss']))
+
             e = e+1
 
         # if not self.quiet:

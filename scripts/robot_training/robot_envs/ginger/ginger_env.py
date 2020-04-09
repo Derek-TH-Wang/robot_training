@@ -15,8 +15,10 @@ from robot_training.robot_sim.rviz_envs import robot_rviz_env
 
 class GingerEnv(robot_rviz_env.RobotRvizEnv):
 
-    def __init__(self):
+    def __init__(self, use_sim_env = False):
         rospy.loginfo("go into GingerEnv")
+
+        self.use_sim_env = use_sim_env
 
         self.controllers_list = []
 
@@ -26,7 +28,7 @@ class GingerEnv(robot_rviz_env.RobotRvizEnv):
         super(GingerEnv, self).__init__()
 
         # We Start all the ROS related Subscribers and publishers
-        self.JOINT_STATES_SUBSCRIBER = '/ginger/joint_states'
+        # self.JOINT_STATES_SUBSCRIBER = '/ginger/joint_states'
         self.wheel_name = ["Wheel_left", "Wheel_right", "Wheel_back"]
         self.main_body_name = ["Knee", "Back_Z", "Back_X", "Back_Y"]
         self.head_body_name = ["Neck_Z", "Neck_X", "Head"]
@@ -59,13 +61,13 @@ class GingerEnv(robot_rviz_env.RobotRvizEnv):
 
         self._check_all_systems_ready()
 
-        self.js_sub = rospy.Subscriber(
-            self.JOINT_STATES_SUBSCRIBER, JointState, self.sub_js_callback)
-        self.get_joint_states = JointState()
+        # self.js_sub = rospy.Subscriber(
+        #     self.JOINT_STATES_SUBSCRIBER, JointState, self.sub_js_callback)
+        # self.get_joint_states = JointState()
 
-        self.js_pub = rospy.Publisher(
-            '/joint_states', JointState, queue_size=5)
-        self.set_joint_states = JointState()
+        # self.js_pub = rospy.Publisher(
+        #     '/joint_states', JointState, queue_size=5)
+        # self.set_joint_states = JointState()
 
         self.main_body_joint_pub = rospy.Publisher(
             "/MainBody/TargetPosition", BodyMsgs, queue_size=5)
@@ -103,6 +105,15 @@ class GingerEnv(robot_rviz_env.RobotRvizEnv):
         rospy.Subscriber("/RightHand/Position",
                          HandMsgs, self.sub_right_hand_joint_callback)
 
+        
+        # parallel calculation, no need of rviz env
+        self.get_main_body_joint = [0.0]*4
+        self.get_head_body_joint = [0.0]*3
+        self.get_left_arm_joint = [0.0]*7
+        self.get_right_arm_joint = [0.0]*7
+        self.get_left_hand_joint = [0.0]*5
+        self.get_right_hand_joint = [0.0]*5
+
         rospy.loginfo("========= Out GingerRobotEnv")
 
     def _check_all_systems_ready(self):
@@ -110,68 +121,129 @@ class GingerEnv(robot_rviz_env.RobotRvizEnv):
         Checks that all the sensors, publishers and other simulation systems are
         operational.
         """
-        self._check_all_sensors_ready()
+        if self.use_sim_env:
+            self._check_all_sensors_ready()
         return True
 
     def _check_all_sensors_ready(self):
-        self._check_joint_states_ready()
+        self._check_rostopic_ready()
         rospy.logdebug("ALL SENSORS READY")
 
-    def _check_joint_states_ready(self):
-        self.get_joint_states = None
-        while self.get_joint_states is None and not rospy.is_shutdown():
+    def _check_rostopic_ready(self):
+        self.get_rostopic = None
+        while self.get_rostopic is None and not rospy.is_shutdown():
             try:
-                self.get_joint_states = rospy.wait_for_message(
-                    self.JOINT_STATES_SUBSCRIBER, JointState, timeout=1.0)
+                self.get_rostopic = rospy.wait_for_message(
+                    "/LeftArm/Position", ArmMsgs, timeout=1.0)
                 rospy.logdebug(
-                    "Current "+str(self.JOINT_STATES_SUBSCRIBER)+" READY=>" + str(self.get_joint_states))
+                    "Current "+"/LeftArm/Position "+" READY=>" + str(self.get_joint_states))
             except:
                 rospy.logerr(
-                    "Current "+str(self.JOINT_STATES_SUBSCRIBER)+" not ready yet, retrying....")
-        return self.get_joint_states
+                    "Current "+"/LeftArm/Position "+" not ready yet, retrying....")
+        return self.get_rostopic
 
-    def set_all_joint_position(self, joint_angle):
-        self.set_joint_states.header.stamp = rospy.Time.now()
-        self.set_joint_states.name = self.joint_state_name
-        self.set_joint_states.position = joint_angle
-        self.js_pub.publish(self.set_joint_states)
-        return True
+    # def set_all_joint_position(self, joint_angle):
+    #     self.set_joint_states.header.stamp = rospy.Time.now()
+    #     self.set_joint_states.name = self.joint_state_name
+    #     self.set_joint_states.position = joint_angle
+    #     self.js_pub.publish(self.set_joint_states)
+    #     return True
 
     def set_left_arm_position(self, joint_angle):
         for i in range(7):
             if joint_angle[i] > self.left_arm_upper_limit[i] or joint_angle[i] < self.left_arm_lower_limit[i]:
                 return False
-        self.left_arm_joint_pub.publish(self.joint_2_armmsg(joint_angle))
+        if self.use_sim_env:
+            self.left_arm_joint_pub.publish(self.joint_2_armmsg(joint_angle))
+        else:
+            self.get_left_arm_joint = joint_angle
         return True
 
     def set_right_arm_position(self, joint_angle):
         for i in range(7):
             if joint_angle[i] > self.right_arm_upper_limit[i] or joint_angle[i] < self.right_arm_lower_limit[i]:
                 return False
-        self.right_arm_joint_pub.publish(self.joint_2_armmsg(joint_angle))
+        if self.use_sim_env:
+            self.right_arm_joint_pub.publish(self.joint_2_armmsg(joint_angle))
+        else:
+            self.get_right_arm_joint = joint_angle
         return True
 
     def set_main_body_position(self, joint_angle):
         for i in range(4):
             if joint_angle[i] > self.main_body_upper_limit[i] or joint_angle[i] < self.main_body_lower_limit[i]:
                 return False
-        self.main_body_joint_pub.publish(self.joint_2_body(joint_angle))
+        if self.use_sim_env:
+            self.main_body_joint_pub.publish(self.joint_2_body(joint_angle))
+        else:
+            self.get_main_body_joint = joint_angle
         return True
 
     def set_head_body_position(self, joint_angle):
-        self.head_body_joint_pub.publish(self.joint_2_head(joint_angle))
+        if self.use_sim_env:
+            self.head_body_joint_pub.publish(self.joint_2_head(joint_angle))
+        else:
+            self.get_head_body_joint = joint_angle
         return True
 
     def set_left_hand_position(self, joint_angle):
-        self.left_hand_joint_pub.publish(self.joint_2_handmsg(joint_angle))
+        if self.use_sim_env:
+            self.left_hand_joint_pub.publish(self.joint_2_handmsg(joint_angle))
+        else:
+            self.get_left_hand_joint = joint_angle
         return True
 
     def set_right_hand_position(self, joint_angle):
-        self.right_hand_joint_pub.publish(self.joint_2_handmsg(joint_angle))
+        if self.use_sim_env:
+            self.right_hand_joint_pub.publish(self.joint_2_handmsg(joint_angle))
+        else:
+            self.get_right_hand_joint = joint_angle
         return True
 
-    def sub_js_callback(self, msg):
-        self.get_joint_states = msg
+    # def get_all_joint_position(self):
+    #     return self.get_joint_states.position
+
+    def get_left_arm_position(self):
+        if self.use_sim_env:
+            return self.armmsg_2_joint(self.left_arm_joint)
+        else:
+            return self.get_left_arm_joint
+
+    def get_right_arm_position(self):
+        if self.use_sim_env:
+            return self.armmsg_2_joint(self.right_arm_joint)
+        else:
+            return self.get_right_arm_joint
+
+    def get_main_body_position(self):
+        if self.use_sim_env:
+            return self.body_2_joint(self.main_body_joint)
+        else:
+            return self.get_main_body_joint
+
+    def get_head_body_position(self):
+        if self.use_sim_env:
+            return self.head_2_joint(self.head_body_joint)
+        else:
+            return self.get_head_body_joint
+
+    def get_left_hand_position(self):
+        if self.use_sim_env: 
+            return self.handmsg_2_joint(self.left_hand_joint)
+        else:
+            return self.get_left_hand_joint
+
+    def get_right_hand_position(self):
+        if self.use_sim_env: 
+            return self.handmsg_2_joint(self.right_hand_joint)
+        else:
+            return self.get_right_hand_joint
+
+    # def get_ee_pose(self):
+    #     # todo
+
+    # def sub_js_callback(self, msg):
+    #     self.get_joint_states = msg
 
     def sub_main_body_joint_callback(self, msg):
         self.main_body_joint = copy.copy(msg)
@@ -193,30 +265,6 @@ class GingerEnv(robot_rviz_env.RobotRvizEnv):
 
     def get_joint_names(self):
         return self.get_joint_states.name
-
-    def get_all_joint_position(self):
-        return self.get_joint_states.position
-
-    def get_left_arm_position(self):
-        return self.armmsg_2_joint(self.left_arm_joint)
-
-    def get_right_arm_position(self):
-        return self.armmsg_2_joint(self.right_arm_joint)
-
-    def get_main_body_position(self):
-        return self.body_2_joint(self.main_body_joint)
-
-    def get_head_body_position(self):
-        return self.head_2_joint(self.head_body_joint)
-
-    def get_left_hand_position(self):
-        return self.handmsg_2_joint(self.left_hand_joint)
-
-    def get_right_hand_position(self):
-        return self.handmsg_2_joint(self.right_hand_joint)
-
-    # def get_ee_pose(self):
-    #     # todo
 
     def joint_2_armmsg(self, joint):
         arm_msg = ArmMsgs()
