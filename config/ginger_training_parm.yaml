@@ -1,4 +1,4 @@
-ginger: #namespace
+ginger_training: #namespace
 
   task_and_robot_environment_name: "GingerPathPlanning-v0"
 
