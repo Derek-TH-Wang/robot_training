@@ -17,29 +17,29 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         self.action_space = spaces.Discrete(self.n_actions)
         self.observation_space = spaces.Box(-np.inf, np.inf,
                                             shape=(self.n_observations, ), dtype='float32')
-        super(GingerTaskEnv, self).__init__(use_sim_env = False)
+        super(GingerTaskEnv, self).__init__(use_sim_env = self.use_sim_env)
         rospy.loginfo("========= Out FetchTestEnv")
 
     def get_params(self):
         # get configuration parameters
+        self.use_sim_env = rospy.get_param('/ginger_env/use_sim_env')
+        self.n_actions = rospy.get_param('/ginger_env/n_actions')
+        self.n_observations = rospy.get_param('/ginger_env/n_observations')
+        self.n_dof = rospy.get_param('/ginger_env/n_dof')
 
-        self.n_actions = rospy.get_param('/ginger/n_actions')
-        self.n_observations = rospy.get_param('/ginger/n_observations')
-        self.n_dof = rospy.get_param('/ginger/n_dof')
+        self.start_angle = rospy.get_param('/ginger_env/start_angle')
+        self.goal_angle = rospy.get_param('/ginger_env/goal_angle')
 
-        self.start_angle = rospy.get_param('/ginger/start_angle')
-        self.goal_angle = rospy.get_param('/ginger/goal_angle')
-
-        self.action_step = rospy.get_param('/ginger/action_step')
-        self.step_punishment = rospy.get_param('/ginger/step_punishment')
-        self.closer_reward_type = rospy.get_param('/ginger/closer_reward_type')
-        self.step_bonus = rospy.get_param('/ginger/step_bonus')
+        self.action_step = rospy.get_param('/ginger_env/action_step')
+        self.step_punishment = rospy.get_param('/ginger_env/step_punishment')
+        self.closer_reward_type = rospy.get_param('/ginger_env/closer_reward_type')
+        self.step_bonus = rospy.get_param('/ginger_env/step_bonus')
         self.impossible_movement_punishement = rospy.get_param(
-            '/ginger/impossible_movement_punishement')
+            '/ginger_env/impossible_movement_punishement')
         self.reached_goal_reward = rospy.get_param(
-            '/ginger/reached_goal_reward')
+            '/ginger_env/reached_goal_reward')
 
-        self.max_distance = rospy.get_param('/ginger/max_distance')
+        self.max_distance = rospy.get_param('/ginger_env/max_distance')
 
         self.init_angle = [self.start_angle["joint0"],
                            self.start_angle["joint1"], self.start_angle["joint2"], self.start_angle["joint3"],
@@ -87,6 +87,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         every joint has 3 choce: -action_step, 0, +action_step
         n_dof robot has 3**n_dof action_space
         """
+        rospy.loginfo("action = " + str(action))
         current_joint_angle = [0]*self.n_dof
         temp_action = action
         for i in range(self.n_dof):
@@ -134,9 +135,9 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         It will also end if it reaches its goal.
         """
         current_joint = observations[:self.n_dof]
-        done, reach_goal = self.calculate_if_done(
+        done, info = self.calculate_if_done(
             self.movement_result, self.desired_angle, current_joint)
-        return done, reach_goal
+        return done, info
 
     def _compute_reward(self, observations, done):
         """
@@ -158,20 +159,20 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         It calculated whather it has finished or not
         """
         done = False
-        reach_goal = False
+        info = {'reach_goal': 'False'}
 
         if movement_result:
             position_similar = np.all(np.isclose(
                 desired_angle, current_pos, atol=1e-02))
             if position_similar:
                 done = True
-                reach_goal = True
+                info = {'reach_goal': 'True'}
                 rospy.logfatal("Reached a Desired Position!")
         else:
             done = True
             # rospy.logfatal("movement_result is wrong")
 
-        return done, reach_goal
+        return done, info
 
     def calculate_reward(self, movement_result, desired_angle, current_pos, norm_dist_from_des):
         """

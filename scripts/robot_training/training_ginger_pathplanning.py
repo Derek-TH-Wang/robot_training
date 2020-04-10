@@ -4,6 +4,7 @@ import sys
 import threading
 import rospy
 import rospkg
+import gym
 from robot_training.util.utility import EnvRegister
 from robot_training.rl_algorithms.DQNRobotSolver import DQNRobotSolver
 
@@ -17,26 +18,26 @@ if __name__ == '__main__':
                     anonymous=True, log_level=rospy.INFO)
 
     rospy.loginfo("read parm from yaml")
-    task_env_name = rospy.get_param('/ginger/task_and_robot_environment_name')
+    task_env_name = rospy.get_param('/ginger_training/task_and_robot_environment_name')
     rospy.loginfo("task_and_robot_environment_name ==>" + str(task_env_name))
-    alpha = rospy.get_param('/ginger/alpha')
-    alpha_decay = rospy.get_param('/ginger/alpha_decay')
-    gamma = rospy.get_param('/ginger/gamma')
-    epsilon = rospy.get_param('/ginger/epsilon')
-    epsilon_log_decay = rospy.get_param('/ginger/epsilon_decay')
-    epsilon_min = rospy.get_param('/ginger/epsilon_min')
-    replay_buffer_size = rospy.get_param('/ginger/replay_buffer_size')
-    batch_size = rospy.get_param('/ginger/batch_size')
-    n_episodes_training = rospy.get_param('/ginger/episodes_training')
-    n_episodes_running = rospy.get_param('/ginger/episodes_running')
-    n_win_ticks = rospy.get_param('/ginger/n_win_ticks')
-    min_episodes = rospy.get_param('/ginger/min_episodes')
-    monitor = rospy.get_param('/ginger/monitor')
-    quiet = rospy.get_param('/ginger/quiet')
-    n_actions = rospy.get_param('/ginger/n_actions')
-    n_observations = rospy.get_param('/ginger/n_observations')
-    action_step = rospy.get_param('/ginger/action_step')
-    reached_goal_reward = rospy.get_param('/ginger/reached_goal_reward')
+    alpha = rospy.get_param('/ginger_training/alpha')
+    alpha_decay = rospy.get_param('/ginger_training/alpha_decay')
+    gamma = rospy.get_param('/ginger_training/gamma')
+    epsilon = rospy.get_param('/ginger_training/epsilon')
+    epsilon_log_decay = rospy.get_param('/ginger_training/epsilon_decay')
+    epsilon_min = rospy.get_param('/ginger_training/epsilon_min')
+    replay_buffer_size = rospy.get_param('/ginger_training/replay_buffer_size')
+    batch_size = rospy.get_param('/ginger_training/batch_size')
+    n_episodes_training = rospy.get_param('/ginger_training/episodes_training')
+    n_episodes_running = rospy.get_param('/ginger_training/episodes_running')
+    n_win_ticks = rospy.get_param('/ginger_training/n_win_ticks')
+    min_episodes = rospy.get_param('/ginger_training/min_episodes')
+    monitor = rospy.get_param('/ginger_training/monitor')
+    quiet = rospy.get_param('/ginger_training/quiet')
+    n_actions = rospy.get_param('/ginger_env/n_actions')
+    n_observations = rospy.get_param('/ginger_env/n_observations')
+    action_step = rospy.get_param('/ginger_env/action_step')
+    reached_goal_reward = rospy.get_param('/ginger_env/reached_goal_reward')
 
     max_env_steps = None
 
@@ -49,7 +50,8 @@ if __name__ == '__main__':
     rospy.sleep(1)
 
     rospy.loginfo("env_register")
-    env_object = EnvRegister(task_env_name)
+    task_env = EnvRegister(task_env_name)
+    env_object = gym.make(task_env)
 
     rospy.loginfo("Starting Learning")
     agent = DQNRobotSolver(env_object,

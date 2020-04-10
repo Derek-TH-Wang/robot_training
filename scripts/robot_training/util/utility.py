@@ -45,9 +45,10 @@ def EnvRegister(task_env, max_episode_steps=10000):
 
     rospy.loginfo(
         "Register of Task Env went OK, lets make the env..."+str(task_env))
-    env = gym.make(task_env)
-    rospy.logwarn("gym make finish")
-    return env
+    return task_env
+    # env = gym.make(task_env)
+    # rospy.logwarn("gym make finish")
+    # return env
 
 
 def LoadYamlFileParamsTest(rospackage_name, rel_path_from_package_to_file, yaml_file_name):

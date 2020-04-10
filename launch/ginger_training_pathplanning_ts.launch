@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <rosparam command="load" file="$(find robot_training)/config/ginger_training_parm_ts.yaml" />
+    <rosparam command="load" file="$(find robot_training)/config/ginger_env_parm.yaml" />
+    <!-- Launch the training system -->
+    <node pkg="robot_training" name="ginger_training_pathplanning_ts" type="training_ginger_pathplanning_ts.py" output="screen"/>
+</launch>

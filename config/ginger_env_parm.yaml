@@ -1,0 +1,35 @@
+ginger_env:
+
+  # Ginger Task Env Realated parameters
+  use_sim_env: False # if ues rviz visualization or not, parallel training need set to false
+  n_actions: 2180 # 3^7
+  n_observations: 29 # init angles:7 + goal angles:7 + current angles:7 + every joint distance:7 + joint space distance:1 = 29 (cartesion space distance)
+  n_dof: 7
+  action_step: 0.1
+  # because of the large action space, reward need to be setted as some big number, otherwise, the loss of the neural network will always be tiny
+  step_punishment: -100
+  step_bonus: 100
+  closer_reward_type: 1 # -(reached_goal_reward/(InitDist)^3)*(currentDist - InitDist)^3
+  impossible_movement_punishement: -0
+  reached_goal_reward: 100
+
+  start_angle:
+    joint0: 0.0
+    joint1: 0.0
+    joint2: 0.0
+    joint3: 0.0
+    joint4: 0.0
+    joint5: 0.0
+    joint6: 0.0
+
+  goal_angle:
+    joint0: -0.2
+    joint1: 0.2
+    joint2: 0.1
+    joint3: -0.2
+    joint4: -0.2
+    joint5: 0.2
+    joint6: 0.0
+
+  max_distance: 1.0 # Maximum distance from EE to the desired GOAL EE
+

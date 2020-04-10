@@ -131,7 +131,7 @@ class DQNRobotSolver():
                 # self._env.render()
                 action = self.choose_action(
                     state, self.get_epsilon(e), do_train, i)
-                next_state, reward, done, reach_goal = self._env.step(action)
+                next_state, reward, done, info = self._env.step(action)
                 next_state = self.preprocess_state(next_state)
                 if do_train:
                     # If we are training we want to remember what I did and process it.
