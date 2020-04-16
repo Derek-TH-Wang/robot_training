@@ -18,7 +18,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         self.observation_space = spaces.Box(-np.inf, np.inf,
                                             shape=(self.n_observations, ), dtype='float32')
         super(GingerTaskEnv, self).__init__(use_sim_env = self.use_sim_env)
-        rospy.loginfo("========= Out FetchTestEnv")
+        rospy.loginfo("========= Out GingerTestEnv")
 
     def get_params(self):
         # get configuration parameters
@@ -57,7 +57,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         self.movement_result = self.set_left_arm_position(self.init_angle)
         if self.movement_result:
             # INIT POSE
-            rospy.logwarn("Moved To Init Position ")
+            rospy.logdebug("Moved To Init Position ")
             self.last_joint_angle = copy.deepcopy(self.init_angle)
             self.current_dist_from_des = self.calculate_distance_between(
                 self.desired_angle, self.last_joint_angle)
@@ -87,7 +87,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         every joint has 3 choce: -action_step, 0, +action_step
         n_dof robot has 3**n_dof action_space
         """
-        rospy.loginfo("action = " + str(action))
+        rospy.logdebug("action = " + str(action))
         current_joint_angle = [0]*self.n_dof
         temp_action = action
         for i in range(self.n_dof):
@@ -110,7 +110,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         if self.movement_result:
             self.last_joint_angle = copy.deepcopy(current_joint_angle)
         else:
-            rospy.logfatal("Impossible joint Position...." +
+            rospy.logdebug("Impossible joint Position...." +
                            str(current_joint_angle))
 
     def _get_obs(self):
@@ -202,15 +202,15 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
                         reward = self.step_punishment
                 elif self.closer_reward_type == 1:
                     #reward = 1/(norm_dist_from_des+(1/self.reached_goal_reward)) - 1/(self.init_dist_from_des + (1/self.reached_goal_reward))
-                    reward = -(self.reached_goal_reward/pow((self.init_dist_from_des), 3)
+                    reward = -(100/pow((self.init_dist_from_des), 3)
                                )*pow((norm_dist_from_des - self.init_dist_from_des), 3)
                 #reward += self.step_punishment
 
-            rospy.loginfo("norm_dist_from_des = " + str(round(norm_dist_from_des, 2)
+            rospy.logdebug("norm_dist_from_des = " + str(round(norm_dist_from_des, 2)
                                                         ) + ", reward = " + str(round(reward, 2)))
         else:
             reward = self.impossible_movement_punishement
-            rospy.logfatal("movement_result is wrong")
+            rospy.logdebug("movement_result is wrong")
 
         # We update the distance
         self.current_dist_from_des = norm_dist_from_des

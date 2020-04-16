@@ -23,12 +23,12 @@ class Net(nn.Module):
         super().__init__()
         self.device = device
         self.model = [
-            nn.Linear(np.prod(state_shape), 4096),
+            nn.Linear(np.prod(state_shape), 512),
             nn.ReLU(inplace=True)]
         for i in range(layer_num):
-            self.model += [nn.Linear(4096, 4096), nn.ReLU(inplace=True)]
+            self.model += [nn.Linear(512, 512), nn.ReLU(inplace=True)]
         if action_shape:
-            self.model += [nn.Linear(4096, np.prod(action_shape))]
+            self.model += [nn.Linear(512, np.prod(action_shape))]
         self.model = nn.Sequential(*self.model)
 
     def forward(self, s, state=None, info={}):
@@ -39,8 +39,10 @@ class Net(nn.Module):
         logits = self.model(s)
         return logits, state
 
+
 def thread_job():
     rospy.spin()
+
 
 def get_args():
     rospackage_name = "robot_training"
@@ -52,7 +54,8 @@ def get_args():
         rospy.loginfo("Created folder="+str(log_path))
 
     rospy.loginfo("read parm from yaml")
-    task_env_name = rospy.get_param('/ginger_training/task_and_robot_environment_name')
+    task_env_name = rospy.get_param(
+        '/ginger_training/task_and_robot_environment_name')
     lr = rospy.get_param('/ginger_training/lr')
     # lr_decay = rospy.get_param('/ginger_training/lr_decay') torch.optim.Adam donot have this parm?
     gamma = rospy.get_param('/ginger_training/gamma')
@@ -60,8 +63,8 @@ def get_args():
     batch_size = rospy.get_param('/ginger_training/batch_size')
     epsilon_training = rospy.get_param('/ginger_training/epsilon_training')
     epsilon_running = rospy.get_param('/ginger_training/epsilon_running')
-    # epsilon_log_decay = rospy.get_param('/ginger_training/epsilon_decay') tiashou.dqn donot have this parm
-    # epsilon_min = rospy.get_param('/ginger_training/epsilon_min') tiashou.dqn donot have this parm
+    epsilon_decay = rospy.get_param('/ginger_training/epsilon_decay')
+    epsilon_min = rospy.get_param('/ginger_training/epsilon_min')
     seed = rospy.get_param('ginger_training/seed')
     layer_num = rospy.get_param('ginger_training/layer_num')
     training_num = rospy.get_param('ginger_training/training_num')
@@ -78,6 +81,8 @@ def get_args():
     parser.add_argument('--seed', type=int, default=seed)
     parser.add_argument('--eps-test', type=float, default=epsilon_running)
     parser.add_argument('--eps-train', type=float, default=epsilon_training)
+    parser.add_argument('--eps-decay', type=float, default=epsilon_decay)
+    parser.add_argument('--eps-min', type=float, default=epsilon_min)
     parser.add_argument('--buffer-size', type=int, default=replay_buffer_size)
     parser.add_argument('--batch-size', type=int, default=batch_size)
     parser.add_argument('--lr', type=float, default=lr)
@@ -89,8 +94,10 @@ def get_args():
     parser.add_argument('--layer-num', type=int, default=layer_num)
     parser.add_argument('--logdir', type=str, default=log_path)
     parser.add_argument('--n-step', type=int, default=estimation_step)
-    parser.add_argument('--target-update-freq', type=int, default=target_update_freq)
-    parser.add_argument('--collect-per-step', type=int, default=collect_per_step)
+    parser.add_argument('--target-update-freq', type=int,
+                        default=target_update_freq)
+    parser.add_argument('--collect-per-step', type=int,
+                        default=collect_per_step)
     parser.add_argument('--render', type=float, default=render)
     parser.add_argument(
         '--device', type=str,
@@ -125,6 +132,7 @@ def test_dqn(args=get_args()):
         use_target_network=args.target_update_freq > 0,
         target_update_freq=args.target_update_freq)
     # collector
+    print("init collector")
     train_collector = Collector(
         policy, train_envs, ReplayBuffer(args.buffer_size))
     test_collector = Collector(policy, test_envs)
@@ -133,15 +141,17 @@ def test_dqn(args=get_args()):
     writer = SummaryWriter(args.logdir + '/' + 'dqn')
 
     def stop_fn(x):
-        return x >= env.spec.reward_threshold
+        # return x >= env.spec.reward_threshold
+        return x >= 10000
 
     def train_fn(x):
-        policy.set_eps(args.eps_train)
+        policy.set_eps(args.eps_train, args.eps_decay, args.eps_min)
 
     def test_fn(x):
-        policy.set_eps(args.eps_test)
+        policy.set_eps(args.eps_test, args.eps_decay, args.eps_min)
 
     # trainer
+    print("start training")
     result = offpolicy_trainer(
         policy, train_collector, test_collector, args.epoch,
         args.step_per_epoch, args.collect_per_step, args.test_num,

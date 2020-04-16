@@ -11,7 +11,7 @@ ginger_env:
   step_bonus: 100
   closer_reward_type: 1 # -(reached_goal_reward/(InitDist)^3)*(currentDist - InitDist)^3
   impossible_movement_punishement: -0
-  reached_goal_reward: 100
+  reached_goal_reward: 10000
 
   start_angle:
     joint0: 0.0

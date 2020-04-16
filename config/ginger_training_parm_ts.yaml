@@ -3,25 +3,25 @@ ginger_training: #namespace
   task_and_robot_environment_name: "GingerPathPlanning-v0"
 
   # DQN algorithm parameters
-  lr: 0.002 # Learning Rate
+  lr: 0.0001 # Learning Rate
   lr_decay: 0.01
   gamma: 0.6 # 1-1/(n), n:min step to goal. future action and reward influence to current, the larger gamma, the robot more focus on the future, less gamma, maybe easy to reach target
-  # epsilon_decay: 0.999 # how we reduse the exploration, 0.9995: 10000 times will reduce to 0.006
-  # epsilon_min: 0.01 # minimum value that epsilon can have
-  replay_buffer_size: 20000
-  batch_size: 10000 # need larger than n_actions!!! as large as possible(but not all data?), otherwise, will loss some of the experience
+  replay_buffer_size: 10000
+  batch_size: 6000 # collect date size
   epsilon_training: 0.8 # choose random rate, 0 none 1 a lot, in a complex task, large is beter
-  epsilon_running: 0.05
+  epsilon_running: 0.01
+  epsilon_decay: 0.999 # how we reduse the exploration, 0.9995: 10000 times will reduce to 0.006
+  epsilon_min: 0.01 # minimum value that epsilon can have
   monitor: True
   quiet: False
 
 
   seed: 1626
   layer_num: 2
-  training_num: 1
+  training_num: 50
   test_num: 1
   epoch: 10000000
-  step_per_epoch: 1000
+  step_per_epoch: 100
   estimation_step: 2
   target_update_freq: 300
   collect_per_step: 10

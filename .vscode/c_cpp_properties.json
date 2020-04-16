@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/derek/ros_workspace/rl_ws/devel/include/**",
+                "/opt/ros/melodic/include/**",
+                "/home/derek/ros_workspace/rl_ws/src/fetch_tc/fetch_ros/fetch_depth_layer/include/**",
+                "/home/derek/ros_workspace/rl_ws/src/fetch_tc/fetch_gazebo/fetch_gazebo/include/**",
+                "/home/derek/ros_workspace/rl_ws/src/fetch_tc/fetch_ros/fetch_ikfast_plugin/include/**",
+                "/home/derek/ros_workspace/rl_ws/src/gingerurdf/include/**",
+                "/usr/include/**"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
