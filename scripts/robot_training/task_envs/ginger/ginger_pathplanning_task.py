@@ -17,7 +17,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         self.action_space = spaces.Discrete(self.n_actions)
         self.observation_space = spaces.Box(-np.inf, np.inf,
                                             shape=(self.n_observations, ), dtype='float32')
-        super(GingerTaskEnv, self).__init__(use_sim_env = self.use_sim_env)
+        super(GingerTaskEnv, self).__init__(use_sim_env=self.use_sim_env)
         rospy.loginfo("========= Out GingerTestEnv")
 
     def get_params(self):
@@ -32,7 +32,8 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
 
         self.action_step = rospy.get_param('/ginger_env/action_step')
         self.step_punishment = rospy.get_param('/ginger_env/step_punishment')
-        self.closer_reward_type = rospy.get_param('/ginger_env/closer_reward_type')
+        self.closer_reward_type = rospy.get_param(
+            '/ginger_env/closer_reward_type')
         self.step_bonus = rospy.get_param('/ginger_env/step_bonus')
         self.impossible_movement_punishement = rospy.get_param(
             '/ginger_env/impossible_movement_punishement')
@@ -193,7 +194,8 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
             reward = 0.0
             if position_similar:
                 reward += self.reached_goal_reward
-                rospy.logfatal("Reached a Desired Position!")
+                rospy.logfatal(
+                    "Reached a Desired Position! reward = "+str(reward))
             else:
                 if self.closer_reward_type == 0:  # will append different reward calculation method in the future
                     if self.current_dist_from_des - norm_dist_from_des > 0.0:
@@ -207,7 +209,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
                 #reward += self.step_punishment
 
             rospy.logdebug("norm_dist_from_des = " + str(round(norm_dist_from_des, 2)
-                                                        ) + ", reward = " + str(round(reward, 2)))
+                                                         ) + ", reward = " + str(round(reward, 2)))
         else:
             reward = self.impossible_movement_punishement
             rospy.logdebug("movement_result is wrong")

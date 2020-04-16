@@ -4,7 +4,7 @@ ginger_training: #namespace
 
   # DQN algorithm parameters
   lr: 0.0001 # Learning Rate
-  lr_decay: 0.01
+  # lr_decay: 0.01 # pytorch donot have this param?
   gamma: 0.6 # 1-1/(n), n:min step to goal. future action and reward influence to current, the larger gamma, the robot more focus on the future, less gamma, maybe easy to reach target
   replay_buffer_size: 10000
   batch_size: 6000 # collect date size

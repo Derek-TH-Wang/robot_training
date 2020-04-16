@@ -140,9 +140,16 @@ def test_dqn(args=get_args()):
     # log
     writer = SummaryWriter(args.logdir + '/' + 'dqn')
 
+    rew_record = []
     def stop_fn(x):
-        # return x >= env.spec.reward_threshold
-        return x >= 10000
+        if x >= 10000:
+            rew_record.append(x)
+            if(len(rew_record) > 100):
+                return True
+            else:
+                return False
+        else:
+            return False
 
     def train_fn(x):
         policy.set_eps(args.eps_train, args.eps_decay, args.eps_min)
@@ -159,16 +166,26 @@ def test_dqn(args=get_args()):
         stop_fn=stop_fn, writer=writer)
 
     assert stop_fn(result['best_reward'])
+    pprint.pprint(result)
     train_collector.close()
     test_collector.close()
-    if __name__ == '__main__':
-        pprint.pprint(result)
-        # Let's watch its performance!
-        env = gym.make(args.task)
-        collector = Collector(policy, env)
-        result = collector.collect(n_episode=1, render=args.render)
-        print(f'Final reward: {result["rew"]}, length: {result["len"]}')
-        collector.close()
+    # save network
+    torch.save(net, 'ginger_dqn_pathplanning.pkl')
+
+    print("training finish, testing...")
+    # Let's watch its performance!
+    task_env = EnvRegister(args.task)
+    env_test = gym.make(task_env)
+    net_test = torch.load('ginger_dqn_pathplanning.pkl')
+    policy_test = DQNPolicy(
+        net_test, optim, args.gamma, args.n_step,
+        use_target_network=args.target_update_freq > 0,
+        target_update_freq=args.target_update_freq)
+    collector = Collector(policy_test, env_test)
+    result = collector.collect(n_episode=1, render=args.render)
+    print(f'Final reward: {result["rew"]}, length: {result["len"]}')
+    collector.close()
+        
 
 
 if __name__ == '__main__':

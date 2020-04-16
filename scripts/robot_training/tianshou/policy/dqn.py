@@ -30,7 +30,7 @@ class DQNPolicy(BasePolicy):
             self.model_old = deepcopy(self.model)
             self.model_old.eval()
 
-    def set_eps(self, eps, eps_decay = 1, eps_min = 0):
+    def set_eps(self, eps, eps_decay=1, eps_min=0):
         self.eps = eps
         self.eps_decay = eps_decay
         self.eps_min = eps_min
