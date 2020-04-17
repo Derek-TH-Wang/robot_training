@@ -1,5 +1,6 @@
 import time
 import tqdm
+import rospy
 
 from tianshou.utils import tqdm_config, MovAvg
 from tianshou.trainer import test_episode, gather_info
@@ -44,11 +45,12 @@ def offpolicy_trainer(policy, train_collector, test_collector, max_epoch,
                     global_step += 1
                     losses = policy.learn(train_collector.sample(batch_size))
                     for k in result.keys():
-                        data[k] = f'{result[k]:.2f}'
-                        if writer and global_step % log_interval == 0:
-                            writer.add_scalar(
-                                k + '_' + task if task else k,
-                                result[k], global_step=global_step)
+                        if type(result[k]) != type([1]): # donot print act
+                            data[k] = f'{result[k]:.2f}'
+                            if writer and global_step % log_interval == 0:
+                                writer.add_scalar(
+                                    k + '_' + task if task else k,
+                                    result[k], global_step=global_step)
                     for k in losses.keys():
                         if stat.get(k) is None:
                             stat[k] = MovAvg()
@@ -68,6 +70,8 @@ def offpolicy_trainer(policy, train_collector, test_collector, max_epoch,
         if best_epoch == -1 or best_reward < result['rew']:
             best_reward = result['rew']
             best_epoch = epoch
+            best_act = result['all_act']
+            rospy.logwarn(best_act)
         if verbose:
             print(f'Epoch #{epoch}: test_reward: {result["rew"]:.6f}, '
                   f'best_reward: {best_reward:.6f} in #{best_epoch}')

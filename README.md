@@ -43,6 +43,17 @@ git clone https://github.com/Derek-TH-Wang/gingerurdf.git
 git checkout simulator  
 catkin_make  
 source devel/setup.bash  
+```
+simulator switch:  
+'use_sim_env' in config/ginger_env_parm.yaml set True or False  
+```
 roslaunch gingerurdf simulator.launch  
-roslaunch robot_training ginger_training_pathplanning.launch  
+```
+if use tianshou framework(multi env parallel training cannot use simulator yet):  
+```
+roslaunch robot_training ginger_training_pathplanning_ts.launch
+```
+if not use tianshou framework:  
+```
+roslaunch robot_training ginger_training_pathplanning.launch
 ```

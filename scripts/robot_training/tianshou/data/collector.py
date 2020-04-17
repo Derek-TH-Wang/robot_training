@@ -1,4 +1,5 @@
 import time
+import rospy
 import torch
 import warnings
 import numpy as np
@@ -28,6 +29,7 @@ class Collector(object):
         self._multi_buf = False  # True if buf is a list
         # need multiple cache buffers only if storing in one buffer
         self._cached_buf = []
+        self.all_act = []
         if self._multi_env:
             self.env_num = len(env)
             if isinstance(self.buffer, list):
@@ -97,6 +99,7 @@ class Collector(object):
         cur_episode = np.zeros(self.env_num) if self._multi_env else 0
         reward_sum = 0
         length_sum = 0
+        self.all_act = []
         while True:
             if warning_count >= 100000:
                 warnings.warn(
@@ -116,6 +119,8 @@ class Collector(object):
                     obs_next=None,
                     info=self._make_batch(self._info))
             result = self.policy(batch_data, self.state)
+            self.all_act.extend(result.act.tolist())
+            rospy.logdebug("self.all_act = " + str(self.all_act))
             self.state = result.state if hasattr(result, 'state') else None
             if isinstance(result.act, torch.Tensor):
                 self._act = result.act.detach().cpu().numpy()
@@ -125,6 +130,7 @@ class Collector(object):
                 self._act = result.act
             obs_next, self._rew, self._done, self._info = self.env.step(
                 self._act if self._multi_env else self._act[0])
+            rospy.logdebug("act = " + str(self._act))
             if render > 0:
                 self.env.render()
                 time.sleep(render)
@@ -137,9 +143,11 @@ class Collector(object):
                         'rew': self._rew[i], 'done': self._done[i],
                         'obs_next': obs_next[i], 'info': self._info[i]}
                     if self._cached_buf:
+                        rospy.logdebug("cached_buf")
                         warning_count += 1
                         self._cached_buf[i].add(**data)
                     elif self._multi_buf:
+                        rospy.logdebug("multi_buf")
                         warning_count += 1
                         self.buffer[i].add(**data)
                         cur_step += 1
@@ -176,6 +184,7 @@ class Collector(object):
                             (cur_episode >= np.array(n_episode)).all() or \
                             np.isscalar(n_episode) and \
                             cur_episode.sum() >= n_episode:
+                        rospy.logdebug("break1")
                         break
             else:
                 self.buffer.add(
@@ -190,10 +199,13 @@ class Collector(object):
                     self.state = None
                     obs_next = self.env.reset()
                 if n_episode != 0 and cur_episode >= n_episode:
+                    rospy.logdebug("break2")
                     break
             if n_step != 0 and cur_step >= n_step:
+                rospy.logdebug("cur_step = "+str(cur_step)+", n_step = "+str(n_step))
                 break
             self._obs = obs_next
+        rospy.logdebug("self.all_act = " + str(self.all_act))
         self._obs = obs_next
         if self._multi_env:
             cur_episode = sum(cur_episode)
@@ -214,6 +226,7 @@ class Collector(object):
             'v/ep': self.episode_speed.get(),
             'rew': reward_sum / n_episode,
             'len': length_sum / n_episode,
+            'all_act': self.all_act
         }
 
     def sample(self, batch_size):

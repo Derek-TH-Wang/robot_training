@@ -112,8 +112,8 @@ def test_dqn(args=get_args()):
     env = gym.make(task_env)
     args.state_shape = env.observation_space.shape or env.observation_space.n
     args.action_shape = env.action_space.shape or env.action_space.n
-    print(args.state_shape)
-    print(args.action_shape)
+    rospy.loginfo(args.state_shape)
+    rospy.loginfo(args.action_shape)
     train_envs = VectorEnv(
         [lambda: gym.make(task_env) for _ in range(args.training_num)])
     test_envs = VectorEnv(
@@ -132,7 +132,7 @@ def test_dqn(args=get_args()):
         use_target_network=args.target_update_freq > 0,
         target_update_freq=args.target_update_freq)
     # collector
-    print("init collector")
+    rospy.loginfo("init collector")
     train_collector = Collector(
         policy, train_envs, ReplayBuffer(args.buffer_size))
     test_collector = Collector(policy, test_envs)
@@ -141,6 +141,7 @@ def test_dqn(args=get_args()):
     writer = SummaryWriter(args.logdir + '/' + 'dqn')
 
     rew_record = []
+
     def stop_fn(x):
         if x >= 10000:
             rew_record.append(x)
@@ -149,6 +150,7 @@ def test_dqn(args=get_args()):
             else:
                 return False
         else:
+            rew_record.clear()
             return False
 
     def train_fn(x):
@@ -158,7 +160,7 @@ def test_dqn(args=get_args()):
         policy.set_eps(args.eps_test, args.eps_decay, args.eps_min)
 
     # trainer
-    print("start training")
+    rospy.loginfo("start training")
     result = offpolicy_trainer(
         policy, train_collector, test_collector, args.epoch,
         args.step_per_epoch, args.collect_per_step, args.test_num,
@@ -172,9 +174,8 @@ def test_dqn(args=get_args()):
     # save network
     torch.save(net, 'ginger_dqn_pathplanning.pkl')
 
-    print("training finish, testing...")
+    rospy.loginfo("training finish, testing...")
     # Let's watch its performance!
-    task_env = EnvRegister(args.task)
     env_test = gym.make(task_env)
     net_test = torch.load('ginger_dqn_pathplanning.pkl')
     policy_test = DQNPolicy(
@@ -183,9 +184,8 @@ def test_dqn(args=get_args()):
         target_update_freq=args.target_update_freq)
     collector = Collector(policy_test, env_test)
     result = collector.collect(n_episode=1, render=args.render)
-    print(f'Final reward: {result["rew"]}, length: {result["len"]}')
+    rospy.loginfo(f'Final reward: {result["rew"]}, length: {result["len"]}')
     collector.close()
-        
 
 
 if __name__ == '__main__':

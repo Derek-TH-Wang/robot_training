@@ -23,11 +23,11 @@ ginger_env:
     joint6: 0.0
 
   goal_angle:
-    joint0: -0.2
-    joint1: 0.2
-    joint2: 0.1
-    joint3: -0.2
-    joint4: -0.2
+    joint0: -0.6
+    joint1: 0.5
+    joint2: 0.3
+    joint3: -1.0
+    joint4: -0.6
     joint5: 0.2
     joint6: 0.0
 

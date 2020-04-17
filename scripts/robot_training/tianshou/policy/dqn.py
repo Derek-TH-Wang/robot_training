@@ -79,7 +79,6 @@ class DQNPolicy(BasePolicy):
         obs = getattr(batch, input)
         q, h = model(obs, state=state, info=batch.info)
         act = q.max(dim=1)[1].detach().cpu().numpy()
-        # print("act = " + str(act))
         # add eps to act
         if eps is None:
             self.eps *= self.eps_decay
@@ -88,10 +87,8 @@ class DQNPolicy(BasePolicy):
             eps = self.eps
         for i in range(len(q)):
             r = np.random.rand()
-            # print("rand = " + str(r) + ", eps = " + str(eps))
             if r < eps:
                 act[i] = np.random.randint(q.shape[1])
-                # print("i = " + str(i) + ", rand act = " + str(act[i]))
         return Batch(logits=q, act=act, state=h)
 
     def learn(self, batch, batch_size=None, repeat=1):
