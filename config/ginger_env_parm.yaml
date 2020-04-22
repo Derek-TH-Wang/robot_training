@@ -7,10 +7,10 @@ ginger_env:
   n_dof: 7
   action_step: 0.1
   # because of the large action space, reward need to be setted as some big number, otherwise, the loss of the neural network will always be tiny
-  step_punishment: -100
-  step_bonus: 100
-  closer_reward_type: 1 # -(reached_goal_reward/(InitDist)^3)*(currentDist - InitDist)^3
-  impossible_movement_punishement: -0
+  closer_reward_type: 1 # 1: -(reached_goal_reward/(InitDist)^3)*(currentDist - InitDist)^3
+  step_punishment: -1
+  step_bonus: 1
+  impossible_movement_punishement: -100
   reached_goal_reward: 10000
 
   start_angle:

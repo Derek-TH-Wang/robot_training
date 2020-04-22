@@ -17,11 +17,11 @@ ginger_training: #namespace
 
 
   seed: 1626
-  layer_num: 2
+  layer_num: 3
   training_num: 50
   test_num: 1
   epoch: 10000000
-  step_per_epoch: 100
+  step_per_epoch: 150
   estimation_step: 2
   target_update_freq: 300
   collect_per_step: 10

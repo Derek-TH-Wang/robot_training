@@ -60,11 +60,11 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
             # INIT POSE
             rospy.logdebug("Moved To Init Position ")
             self.last_joint_angle = copy.deepcopy(self.init_angle)
-            self.current_dist_from_des = self.calculate_distance_between(
+            self.last_dist_from_des = self.calculate_distance_between(
                 self.desired_angle, self.last_joint_angle)
-            self.init_dist_from_des = self.current_dist_from_des
+            self.init_dist_from_des = self.last_dist_from_des
             rospy.logdebug("INIT DISTANCE FROM GOAL==>" +
-                           str(self.current_dist_from_des))
+                           str(self.last_dist_from_des))
         else:
             rospy.logfatal("Moved To Init Position ERR")
             assert False, "Desired GOAL EE is not possible"
@@ -187,8 +187,8 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
             # Calculating Distance
             rospy.logdebug("desired_angle="+str(desired_angle))
             rospy.logdebug("current_pos="+str(current_pos))
-            rospy.logdebug("self.current_dist_from_des=" +
-                           str(self.current_dist_from_des))
+            rospy.logdebug("self.last_dist_from_des=" +
+                           str(self.last_dist_from_des))
             rospy.logdebug("norm_dist_from_des=" + str(norm_dist_from_des))
 
             reward = 0.0
@@ -198,10 +198,10 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
                     "Reached a Desired Position! reward = "+str(reward))
             else:
                 if self.closer_reward_type == 0:  # will append different reward calculation method in the future
-                    if self.current_dist_from_des - norm_dist_from_des > 0.0:
-                        reward = self.step_bonus
-                    else:
+                    if norm_dist_from_des - self.last_dist_from_des >= 0.0:
                         reward = self.step_punishment
+                    else:
+                        reward = self.step_bonus
                 elif self.closer_reward_type == 1:
                     #reward = 1/(norm_dist_from_des+(1/self.reached_goal_reward)) - 1/(self.init_dist_from_des + (1/self.reached_goal_reward))
                     reward = -(100/pow((self.init_dist_from_des), 3)
@@ -215,9 +215,9 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
             rospy.logdebug("movement_result is wrong")
 
         # We update the distance
-        self.current_dist_from_des = norm_dist_from_des
+        self.last_dist_from_des = norm_dist_from_des
         rospy.logdebug("Updated Distance from GOAL==" +
-                       str(self.current_dist_from_des))
+                       str(self.last_dist_from_des))
         return reward
 
     def calculate_distance_between(self, v1, v2):

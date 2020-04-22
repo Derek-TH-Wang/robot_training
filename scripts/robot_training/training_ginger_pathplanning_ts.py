@@ -145,7 +145,7 @@ def test_dqn(args=get_args()):
     def stop_fn(x):
         if x >= 10000:
             rew_record.append(x)
-            if(len(rew_record) > 100):
+            if(len(rew_record) > 10):
                 return True
             else:
                 return False
