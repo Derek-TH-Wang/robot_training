@@ -1,10 +1,8 @@
 # robot_training  
-Robot reinforcement lerning training using OpenAI Gym in Ros Env  
+Robot reinforcement lerning training demo, using OpenAI Gym environment with Ros  
 
 ## system equirement:  
-ubuntu18.04, ros-melodic,cuda10  
-fetch, iriwam demo: python2 tensorflow1.13.0  
-ginger: python3 tensorflow1.14.0  
+ubuntu18.04, ros-melodic, pytorch1.4, tensorflow1.13+, cuda10+  
 ```
 sudo pip3 install rospkg  
 sudo pip3 install defusedxml  
@@ -16,7 +14,7 @@ sudo apt-get install ros-melodic-effort-controllers
 ```
 
 ## start training:  
-### fetch robot demo:  
+### fetch robot dqn training demo:  
 ```
 git clone https://bitbucket.org/theconstructcore/fetch_tc.git  
 git checkout melodic-gazebo9  
@@ -26,7 +24,7 @@ source devel/setup.bash
 roslaunch fetch_moveit_config demo.launch  
 roslaunch robot_training fetch_training.launch  
 ```
-### iriwam robot demo:  
+### iriwam robot q-learning demo:  
 ```
 sudo apt-get install ros-melodic-joint-trajectory*  
 git clone https://bitbucket.org/theconstructcore/iri_wam.git  
@@ -37,7 +35,7 @@ catkin_make
 source devel/setup.bash  
 roslaunch robot_training iriwam_training.launch  
 ```
-### ginger robot demo:  
+### ginger robot dqn training demo:  
 ```
 git clone https://github.com/Derek-TH-Wang/gingerurdf.git  
 git checkout simulator  
@@ -45,15 +43,14 @@ catkin_make
 source devel/setup.bash  
 ```
 simulator switch:  
-'use_sim_env' in config/ginger_env_parm.yaml set True or False  
-```
-roslaunch gingerurdf simulator.launch  
-```
+set 'use_sim_env' parameter True or False in config/ginger_env_parm.yaml  
+
 if use tianshou framework(multi env parallel training cannot use simulator yet):  
 ```
 roslaunch robot_training ginger_training_pathplanning_ts.launch
 ```
 if not use tianshou framework:  
 ```
+roslaunch gingerurdf simulator.launch  
 roslaunch robot_training ginger_training_pathplanning.launch
 ```
