@@ -42,6 +42,9 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
 
         self.max_distance = rospy.get_param('/ginger_env/max_distance')
 
+        self.max_step_num = rospy.get_param('/ginger_env/max_step_num')
+        self.step_num = 0
+
         self.init_angle = [self.start_angle["joint0"],
                            self.start_angle["joint1"], self.start_angle["joint2"], self.start_angle["joint3"],
                            self.start_angle["joint4"], self.start_angle["joint5"], self.start_angle["joint6"]]
@@ -54,7 +57,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
     def _set_init_joint(self):
         rospy.logdebug("Init Joint:")
         rospy.logdebug(self.init_angle)
-
+        self.step_num = 0
         self.movement_result = self.set_left_arm_position(self.init_angle)
         if self.movement_result:
             # INIT POSE
@@ -110,6 +113,7 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         self.movement_result = self.set_left_arm_position(current_joint_angle)
         if self.movement_result:
             self.last_joint_angle = copy.deepcopy(current_joint_angle)
+            self.step_num += 1
         else:
             rospy.logdebug("Impossible joint Position...." +
                            str(current_joint_angle))
@@ -162,16 +166,19 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         done = False
         info = {'reach_goal': False}
 
-        if movement_result:
-            position_similar = np.all(np.isclose(
-                desired_angle, current_pos, atol=1e-02))
-            if position_similar:
-                done = True
-                info = {'reach_goal': True}
-                rospy.logfatal("Reached a Desired Position!")
-        else:
+        if self.step_num >= self.max_step_num:
             done = True
-            # rospy.logfatal("movement_result is wrong")
+        else:
+            if movement_result:
+                position_similar = np.all(np.isclose(
+                    desired_angle, current_pos, atol=1e-02))
+                if position_similar:
+                    done = True
+                    info = {'reach_goal': True}
+                    rospy.logfatal("Reached a Desired Position!")
+            else:
+                done = True
+                # rospy.logfatal("movement_result is wrong")
 
         return done, info
 

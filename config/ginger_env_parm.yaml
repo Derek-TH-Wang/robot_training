@@ -12,6 +12,7 @@ ginger_env:
   step_bonus: 1
   impossible_movement_punishement: -100
   reached_goal_reward: 10000
+  max_step_num: 30 # max set_action num, avoid motion go around
 
   start_angle:
     joint0: 0.0
