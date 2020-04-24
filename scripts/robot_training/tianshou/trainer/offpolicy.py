@@ -1,6 +1,7 @@
 import time
 import tqdm
 import rospy
+import numpy as np
 
 from tianshou.utils import tqdm_config, MovAvg
 from tianshou.trainer import test_episode, gather_info
@@ -25,11 +26,11 @@ def offpolicy_trainer(policy, train_collector, test_collector, max_epoch,
             while t.n < t.total:
                 result = train_collector.collect(n_step=collect_per_step)
                 data = {}
-                if stop_fn and stop_fn(result['rew']):
+                if stop_fn and stop_fn(result['info']):
                     test_result = test_episode(
                         policy, test_collector, test_fn,
                         epoch, episode_per_test)
-                    if stop_fn and stop_fn(test_result['rew']):
+                    if stop_fn and stop_fn(test_result['info']):
                         for k in result.keys():
                             data[k] = f'{result[k]:.2f}'
                         t.set_postfix(**data)
@@ -45,7 +46,8 @@ def offpolicy_trainer(policy, train_collector, test_collector, max_epoch,
                     global_step += 1
                     losses = policy.learn(train_collector.sample(batch_size))
                     for k in result.keys():
-                        if type(result[k]) != type([1]): # donot print act
+                        # donot print act, info
+                        if type(result[k]) != type([]) and type(result[k]) != np.ndarray:
                             data[k] = f'{result[k]:.2f}'
                             if writer and global_step % log_interval == 0:
                                 writer.add_scalar(
@@ -75,7 +77,7 @@ def offpolicy_trainer(policy, train_collector, test_collector, max_epoch,
         if verbose:
             print(f'Epoch #{epoch}: test_reward: {result["rew"]:.6f}, '
                   f'best_reward: {best_reward:.6f} in #{best_epoch}')
-        if stop_fn and stop_fn(best_reward):
+        if stop_fn and stop_fn(result['info']):
             break
     return gather_info(
         start_time, train_collector, test_collector, best_reward)

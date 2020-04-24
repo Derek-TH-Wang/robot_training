@@ -61,7 +61,7 @@ class Collector(object):
 
     def reset_env(self):
         self._obs = self.env.reset()
-        self._act = self._rew = self._done = self._info = None
+        self._act = self._rew = self._done = self._info = {}
         if self._multi_env:
             self.reward = np.zeros(self.env_num)
             self.length = np.zeros(self.env_num)
@@ -131,6 +131,7 @@ class Collector(object):
             obs_next, self._rew, self._done, self._info = self.env.step(
                 self._act if self._multi_env else self._act[0])
             rospy.logdebug("act = " + str(self._act))
+            rospy.logdebug("info = " + str(self._info))
             if render > 0:
                 self.env.render()
                 time.sleep(render)
@@ -226,7 +227,8 @@ class Collector(object):
             'v/ep': self.episode_speed.get(),
             'rew': reward_sum / n_episode,
             'len': length_sum / n_episode,
-            'all_act': self.all_act
+            'all_act': self.all_act,
+            "info": self._info
         }
 
     def sample(self, batch_size):

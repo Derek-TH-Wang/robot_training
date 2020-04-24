@@ -160,14 +160,14 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
         It calculated whather it has finished or not
         """
         done = False
-        info = {'reach_goal': 'False'}
+        info = {'reach_goal': False}
 
         if movement_result:
             position_similar = np.all(np.isclose(
                 desired_angle, current_pos, atol=1e-02))
             if position_similar:
                 done = True
-                info = {'reach_goal': 'True'}
+                info = {'reach_goal': True}
                 rospy.logfatal("Reached a Desired Position!")
         else:
             done = True

@@ -25,10 +25,11 @@ class Net(nn.Module):
         self.model = [
             nn.Linear(np.prod(state_shape), 512),
             nn.ReLU(inplace=True)]
-        for i in range(layer_num):
-            self.model += [nn.Linear(512, 512), nn.ReLU(inplace=True)]
+        self.model += [nn.Linear(512, 1024), nn.ReLU(inplace=True)]
+        self.model += [nn.Linear(1024, 1024), nn.ReLU(inplace=True)]
+        self.model += [nn.Linear(1024, 1024), nn.ReLU(inplace=True)]
         if action_shape:
-            self.model += [nn.Linear(512, np.prod(action_shape))]
+            self.model += [nn.Linear(1024, np.prod(action_shape))]
         self.model = nn.Sequential(*self.model)
 
     def forward(self, s, state=None, info={}):
@@ -143,15 +144,18 @@ def test_dqn(args=get_args()):
     rew_record = []
 
     def stop_fn(x):
-        if x >= 10000:
-            rew_record.append(x)
-            if(len(rew_record) > 10):
-                return True
+        # if x >= 10000:
+        for s in x:
+            if s.get('reach_goal') == True:
+                rew_record.append(s)
+                rospy.loginfo("reach goal times = " + str(len(rew_record)))
+                if(len(rew_record) > len(x)*0.8):
+                    return True
+                else:
+                    return False
             else:
+                rew_record.clear()
                 return False
-        else:
-            rew_record.clear()
-            return False
 
     def train_fn(x):
         policy.set_eps(args.eps_train, args.eps_decay, args.eps_min)
