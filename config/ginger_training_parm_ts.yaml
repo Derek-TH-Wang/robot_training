@@ -6,8 +6,8 @@ ginger_training: #namespace
   lr: 0.0001 # Learning Rate
   # lr_decay: 0.01 # pytorch donot have this param?
   gamma: 0.9 # 1-1/(n), n:min step to goal. future action and reward influence to current, the larger gamma, the robot more focus on the future, less gamma, maybe easy to reach target
-  replay_buffer_size: 20000
-  batch_size: 18000 # collect date size
+  replay_buffer_size: 16000 # size >= training_num*step_per_epoch
+  batch_size: 12000 # collect date size
   epsilon_training: 0.8 # choose random rate, 0 none 1 a lot, in a complex task, large is beter
   epsilon_running: 0.01
   epsilon_decay: 0.999 # how we reduse the exploration, 0.9995: 10000 times will reduce to 0.006
@@ -18,7 +18,7 @@ ginger_training: #namespace
 
   seed: 1626
   layer_num: 3
-  training_num: 200
+  training_num: 100
   test_num: 1
   epoch: 10000000
   step_per_epoch: 150

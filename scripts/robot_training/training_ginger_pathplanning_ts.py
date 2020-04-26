@@ -25,11 +25,11 @@ class Net(nn.Module):
         self.model = [
             nn.Linear(np.prod(state_shape), 512),
             nn.ReLU(inplace=True)]
-        self.model += [nn.Linear(512, 1024), nn.ReLU(inplace=True)]
-        self.model += [nn.Linear(1024, 1024), nn.ReLU(inplace=True)]
-        self.model += [nn.Linear(1024, 1024), nn.ReLU(inplace=True)]
+        self.model += [nn.Linear(512, 512), nn.ReLU(inplace=True)]
+        self.model += [nn.Linear(512, 512), nn.ReLU(inplace=True)]
+        self.model += [nn.Linear(512, 512), nn.ReLU(inplace=True)]
         if action_shape:
-            self.model += [nn.Linear(1024, np.prod(action_shape))]
+            self.model += [nn.Linear(512, np.prod(action_shape))]
         self.model = nn.Sequential(*self.model)
 
     def forward(self, s, state=None, info={}):
