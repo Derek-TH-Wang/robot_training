@@ -49,9 +49,9 @@ class RobotRvizEnv(gym.Env):
 
         return obs, reward, done, info
 
-    def reset(self):
+    def reset(self, update_random_angle = False):
         rospy.logdebug("Reseting RobotRvizEnvironment")
-        self._reset_sim()
+        self._reset_sim(update_random_angle)
         self._init_env_variables()
         self._update_episode()
         obs = self._get_obs()
@@ -100,12 +100,12 @@ class RobotRvizEnv(gym.Env):
     # Extension methods
     # ----------------------------
 
-    def _reset_sim(self):
+    def _reset_sim(self, update_random_angle = False):
         self._check_all_systems_ready()
-        self._set_init_joint()
+        self._set_init_joint(update_random_angle)
         return True
 
-    def _set_init_joint(self):
+    def _set_init_joint(self, update_random_angle = False):
         """Sets the Robot in its init pose
         """
         raise NotImplementedError()

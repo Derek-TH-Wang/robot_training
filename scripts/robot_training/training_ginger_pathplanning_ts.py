@@ -27,7 +27,6 @@ class Net(nn.Module):
             nn.ReLU(inplace=True)]
         self.model += [nn.Linear(512, 512), nn.ReLU(inplace=True)]
         self.model += [nn.Linear(512, 512), nn.ReLU(inplace=True)]
-        self.model += [nn.Linear(512, 512), nn.ReLU(inplace=True)]
         if action_shape:
             self.model += [nn.Linear(512, np.prod(action_shape))]
         self.model = nn.Sequential(*self.model)
@@ -147,15 +146,15 @@ def test_dqn(args=get_args()):
         # if x >= 10000:
         for s in x:
             if s.get('reach_goal') == True:
-                rew_record.append(s)
+                rew_record.extend(s)
                 rospy.loginfo("reach goal times = " + str(len(rew_record)))
-                if(len(rew_record) > len(x)*0.8):
+                if(len(rew_record) > 1000):
                     return True
                 else:
                     return False
-            else:
-                rew_record.clear()
-                return False
+            # else:
+            #     rew_record.clear()
+            #     return False
 
     def train_fn(x):
         policy.set_eps(args.eps_train, args.eps_decay, args.eps_min)

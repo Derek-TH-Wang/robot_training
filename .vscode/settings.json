@@ -4,5 +4,5 @@
         "/home/derek/ubuntu-install/catkin_ws/devel/lib/python2.7/dist-packages"
     ],
     "python.pythonPath": "/usr/bin/python3.6",
-    "editor.fontFamily": "Consolas, 'Courier New', monospace",
+    "editor.fontFamily": "monospace",
 }

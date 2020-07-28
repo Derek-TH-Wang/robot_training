@@ -1,6 +1,7 @@
 import sys
 import copy
 import rospy
+import random
 import numpy as np
 import geometry_msgs.msg
 import trajectory_msgs.msg
@@ -15,7 +16,7 @@ from robot_training.robot_sim.rviz_envs import robot_rviz_env
 
 class GingerEnv(robot_rviz_env.RobotRvizEnv):
 
-    def __init__(self, use_sim_env = False):
+    def __init__(self, use_sim_env=False):
         rospy.loginfo("go into GingerEnv")
 
         self.use_sim_env = use_sim_env
@@ -105,7 +106,6 @@ class GingerEnv(robot_rviz_env.RobotRvizEnv):
         rospy.Subscriber("/RightHand/Position",
                          HandMsgs, self.sub_right_hand_joint_callback)
 
-        
         # parallel calculation, no need of rviz env
         self.get_main_body_joint = [0.0]*4
         self.get_head_body_joint = [0.0]*3
@@ -142,12 +142,29 @@ class GingerEnv(robot_rviz_env.RobotRvizEnv):
                     "Current "+"/LeftArm/Position "+" not ready yet, retrying....")
         return self.get_rostopic
 
-    # def set_all_joint_position(self, joint_angle):
-    #     self.set_joint_states.header.stamp = rospy.Time.now()
-    #     self.set_joint_states.name = self.joint_state_name
-    #     self.set_joint_states.position = joint_angle
-    #     self.js_pub.publish(self.set_joint_states)
-    #     return True
+    def get_body_random_angle(self):
+        body_random_angle = [0]*7
+        for i in range(7):
+            body_random_angle[i] = self.main_body_lower_limit[i] + \
+                (self.main_body_upper_limit -
+                 self.main_body_lower_limit) * random.random()
+        return body_random_angle
+
+    def get_larm_random_angle(self):
+        larm_random_angle = [0]*7
+        for i in range(7):
+            larm_random_angle[i] = self.left_arm_lower_limit[i] + \
+                (self.left_arm_upper_limit -
+                 self.left_arm_lower_limit) * random.random()
+        return larm_random_angle
+
+    def get_rarm_random_angle(self):
+        rarm_random_angle = [0]*7
+        for i in range(7):
+            rarm_random_angle[i] = self.right_arm_lower_limit[i] + \
+                (self.right_arm_upper_limit -
+                 self.right_arm_lower_limit) * random.random()
+        return rarm_random_angle
 
     def set_left_arm_position(self, joint_angle):
         for i in range(7):
@@ -195,7 +212,8 @@ class GingerEnv(robot_rviz_env.RobotRvizEnv):
 
     def set_right_hand_position(self, joint_angle):
         if self.use_sim_env:
-            self.right_hand_joint_pub.publish(self.joint_2_handmsg(joint_angle))
+            self.right_hand_joint_pub.publish(
+                self.joint_2_handmsg(joint_angle))
         else:
             self.get_right_hand_joint = joint_angle
         return True
@@ -228,13 +246,13 @@ class GingerEnv(robot_rviz_env.RobotRvizEnv):
             return self.get_head_body_joint
 
     def get_left_hand_position(self):
-        if self.use_sim_env: 
+        if self.use_sim_env:
             return self.handmsg_2_joint(self.left_hand_joint)
         else:
             return self.get_left_hand_joint
 
     def get_right_hand_position(self):
-        if self.use_sim_env: 
+        if self.use_sim_env:
             return self.handmsg_2_joint(self.right_hand_joint)
         else:
             return self.get_right_hand_joint

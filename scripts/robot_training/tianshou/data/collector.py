@@ -60,7 +60,7 @@ class Collector(object):
         return self.env_num
 
     def reset_env(self):
-        self._obs = self.env.reset()
+        self._obs = self.env.reset(update_random_angle = True)
         self._act = self._rew = self._done = self._info = {}
         if self._multi_env:
             self.reward = np.zeros(self.env_num)
@@ -88,7 +88,7 @@ class Collector(object):
         else:
             return np.array([data])
 
-    def collect(self, n_step=0, n_episode=0, render=0):
+    def collect(self, n_step=0, n_episode=0, render=0, reset_random_angle = False):
         warning_count = 0
         if not self._multi_env:
             n_episode = np.sum(n_episode)
@@ -179,6 +179,7 @@ class Collector(object):
                                 # remove ref count in pytorch (?)
                                 self.state = self.state.detach()
                 if sum(self._done):
+                    # obs_next = self.env.reset(np.where(self._done)[0], update_random_angle = reset_random_angle)
                     obs_next = self.env.reset(np.where(self._done)[0])
                 if n_episode != 0:
                     if isinstance(n_episode, list) and \
@@ -198,6 +199,7 @@ class Collector(object):
                     length_sum += self.length
                     self.reward, self.length = 0, 0
                     self.state = None
+                    # obs_next = self.env.reset(update_random_angle = reset_random_angle)
                     obs_next = self.env.reset()
                 if n_episode != 0 and cur_episode >= n_episode:
                     rospy.logdebug("break2")

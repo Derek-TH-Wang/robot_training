@@ -39,9 +39,6 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
             '/ginger_env/impossible_movement_punishement')
         self.reached_goal_reward = rospy.get_param(
             '/ginger_env/reached_goal_reward')
-
-        self.max_distance = rospy.get_param('/ginger_env/max_distance')
-
         self.max_step_num = rospy.get_param('/ginger_env/max_step_num')
         self.step_num = 0
 
@@ -54,9 +51,18 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
 
         self.init_dist_from_des = 0
 
-    def _set_init_joint(self):
+
+    def _set_init_joint(self, update_random_angle=False):
+        if update_random_angle:
+            self.init_angle = self.get_larm_random_angle()
+            self.desired_angle = self.get_larm_random_angle()
+        else:
+            self.init_angle = self.init_angle
+            self.desired_angle = self.desired_angle
         rospy.logdebug("Init Joint:")
         rospy.logdebug(self.init_angle)
+        rospy.logdebug("Goal Joint:")
+        rospy.logdebug(self.desired_angle)
         self.step_num = 0
         self.movement_result = self.set_left_arm_position(self.init_angle)
         if self.movement_result:
@@ -210,11 +216,12 @@ class GingerTaskEnv(ginger_env.GingerEnv, utils.EzPickle):
                     else:
                         reward = self.step_bonus
                 elif self.closer_reward_type == 1:
-                    #reward = 1/(norm_dist_from_des+(1/self.reached_goal_reward)) - 1/(self.init_dist_from_des + (1/self.reached_goal_reward))
+                    # reward = 1/(norm_dist_from_des+(1/self.reached_goal_reward)) - 1/(self.init_dist_from_des + (1/self.reached_goal_reward))
                     reward = -(100/pow((self.init_dist_from_des), 3)
                                )*pow((norm_dist_from_des - self.init_dist_from_des), 3)
-                #reward += self.step_punishment
-
+                # reward += self.step_punishment
+                elif self.closer_reward_type == 2:
+                    reward = -1
             rospy.logdebug("norm_dist_from_des = " + str(round(norm_dist_from_des, 2)
                                                          ) + ", reward = " + str(round(reward, 2)))
         else:

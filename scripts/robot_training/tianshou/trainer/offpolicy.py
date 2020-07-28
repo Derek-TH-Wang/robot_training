@@ -17,6 +17,7 @@ def offpolicy_trainer(policy, train_collector, test_collector, max_epoch,
     start_time = time.time()
     for epoch in range(1, 1 + max_epoch):
         # train
+        # 每个epoch，没有reset场景？？？？？
         policy.train()
         if train_fn:
             train_fn(epoch)
@@ -24,6 +25,11 @@ def offpolicy_trainer(policy, train_collector, test_collector, max_epoch,
                 total=step_per_epoch, desc=f'Epoch #{epoch}',
                 **tqdm_config) as t:
             while t.n < t.total:
+                # if t.n == 0:
+                #     reset_random_angle = True
+                # else:
+                #     reset_random_angle = False
+                # result = train_collector.collect(n_step=collect_per_step, update_random_angle = reset_random_angle)
                 result = train_collector.collect(n_step=collect_per_step)
                 data = {}
                 if stop_fn and stop_fn(result['info']):
@@ -77,6 +83,7 @@ def offpolicy_trainer(policy, train_collector, test_collector, max_epoch,
         if verbose:
             print(f'Epoch #{epoch}: test_reward: {result["rew"]:.6f}, '
                   f'best_reward: {best_reward:.6f} in #{best_epoch}')
+        print("test: ", result['info'])
         if stop_fn and stop_fn(result['info']):
             break
     return gather_info(

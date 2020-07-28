@@ -46,13 +46,14 @@ class VectorEnv(BaseVectorEnv):
         super().__init__(env_fns)
         self.envs = [_() for _ in env_fns]
 
-    def reset(self, id=None):
+    def reset(self, id=None, update_random_angle = False):
         if id is None:
             self._obs = np.stack([e.reset() for e in self.envs])
         else:
             if np.isscalar(id):
                 id = [id]
             for i in id:
+                # self._obs[i] = self.envs[i].reset(update_random_angle)
                 self._obs[i] = self.envs[i].reset()
         return self._obs
 
